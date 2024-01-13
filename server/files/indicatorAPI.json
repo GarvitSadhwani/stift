@@ -1,0 +1,3 @@
+{
+    "i_ema":["https://www.alphavantage.co/query?function=EMA&symbol=",".BSE&interval=weekly&time_period=","&series_type=open&apikey="]
+}

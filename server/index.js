@@ -1,6 +1,6 @@
-const express=require('express');
-const cors=require('cors');
-const { getDashboardData } = require('./api/dashboard');
+import express from 'express';
+import cors from 'cors';
+import {getDashboardData} from './api/Dashboard.js'
 const app=express();
 const port=3030;
 
