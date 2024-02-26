@@ -1,4 +1,4 @@
-import {getData, insertData} from './DbUtils.js';
+import {getIdData,getData, insertStrategy} from './DbUtils.js';
 import { promises as fsPromises } from 'fs';
 import * as indicatorFunctions from './Indicators.js';
 import {APIS_FILE,AV_API_KEY,STOCKS_FILE} from '../config/config.js'
@@ -33,6 +33,18 @@ function parseParam(parameter){
     return parsed;
 }
 
+export async function getJobs(googleid){
+    const jobs=await getData(googleid);
+    let response=jobs;
+    return response;
+}
+
+export async function getJobById(id,googleid){
+    const jobs=await getIdData(id,googleid);
+    let response=jobs;
+    return response;
+}
+
 export async function runJob(jobId){
     const indicatorApisFile = await fsPromises.readFile(APIS_FILE, 'utf8');
     const indicatorApis=JSON.parse(indicatorApisFile);
@@ -40,7 +52,7 @@ export async function runJob(jobId){
     let stocksJson=JSON.parse(stockFile);
     let stocks=stocksJson["0"].map(stock=>stock["symbol"]);
 
-    const parameters=await getData(jobId);
+    const parameters=await getIdData(jobId);
     console.log("param: ",parameters);
     let allParams=parameters.split(",");
     for(let param of allParams){
@@ -62,18 +74,20 @@ export async function runJob(jobId){
 
 }
 
-export async function runJobActual(jobId){
+export async function runJobActual(jobId,googleid){
     const stockFile=await fsPromises.readFile(STOCKS_FILE, 'utf8');
     let stocksJson=JSON.parse(stockFile);
     let stocks=stocksJson["0"].map(stock=>stock["symbol"]);
     let qualifiedStocks=[];
 
-    const parameters=await getData(jobId);
-    let allParams=parameters.split(",");
+    const strategy=await getIdData(jobId,googleid);
+    console.log("strat: ",strategy)
+    let allParams=strategy.parameters.split(",");
     console.log("starting job");
     for(let param of allParams){
+        if(param.length==0) continue;
         let fetchData=parseParam(param);
-        console.log("fethc: ",fetchData)
+        console.log("fetch: ",fetchData)
         for(let stock of stocks){
             let qualified=true;
             switch(fetchData.type){
@@ -122,4 +136,10 @@ export async function runJobActual(jobId){
     response=response.sort((a, b) => b.perChange - a.perChange);
     return response;
 
+}
+
+export async function storeJob(strategy){
+    const jobs=await insertStrategy(strategy);
+    let response=jobs;
+    return response;
 }

@@ -1,23 +1,34 @@
 import pool from '../Postgresql.js';
 
-export async function insertData(){
+export async function insertStrategy(strategy){
+  console.log("recieved strat: ",strategy);
     const query = {
-        text: 'INSERT INTO jobs(username, parameters) VALUES($1, $2);',
-        values: ['garvit', 'i_ema#100>i_ema#200,']
+        text: 'INSERT INTO jobs(username, date, description, parameters, googleid, email) VALUES($1, $2, $3, $4, $5, $6);',
+        values: [strategy.username, strategy.date, strategy.description, strategy.parameter, strategy.googleid, strategy.email]
       };
     await pool.query(query);
     
 }
 
-export async function getData(jobId){
+export async function getData(googleid){
+  const query = {
+      text: 'SELECT * FROM jobs WHERE googleid = $1',
+      values: [googleid]
+    };
+  
+  let result=await pool.query(query);
+  return result.rows;
+}
+
+export async function getIdData(jobId,googleid){
     const query = {
-        text: 'SELECT * FROM jobs WHERE id = $1',
-        values: [jobId]
+        text: 'SELECT * FROM jobs WHERE id = $1 AND googleid = $2',
+        values: [jobId,googleid]
       };
     
     let result=await pool.query(query);
   
-    return result.rows[0].parameters;
+    return result.rows[0];
 }
 
 

@@ -97,6 +97,14 @@ if __name__ == '__main__':
                 print("not found: ",stock["symbol"])
                 continue
             with open('../stocks/'+stock["symbol"]+'.json', 'w') as json_file:
+                if "quote" in data_list and "close" in data_list["quote"][0]:
+                    data_list={
+                        "quote": [
+                            {
+                                "close": data_list["quote"][0]["close"]
+                            }
+                        ]
+                    }
                 json.dump(data_list, json_file,indent=2)
             print("saved: ",stock["symbol"])
     

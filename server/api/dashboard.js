@@ -1,9 +1,8 @@
-import {runJob,runJobActual} from './Jobs.js';
+import {getJobs,runJobActual} from './Jobs.js';
 
 export async function getDashboardData(req, res){    
-    runJob(36);
-    res.json({message:'This is your dashboard'});  
+    let response= await getJobs(req.query.googleid);
+    res.send({message:'This is your dashboard',data:response});  
     //let response=await runJobActual(38);
     //res.send({message:"Crunched data for you!",data:response});
-        
 }
