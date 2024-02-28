@@ -2,7 +2,7 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:3030",
+  "proxy": "https://3e93-2406-7400-56-d091-f563-e526-2a22-3594.ngrok-free.app",
   "dependencies": {
     "@react-oauth/google": "^0.12.1",
     "@testing-library/jest-dom": "^5.17.0",
