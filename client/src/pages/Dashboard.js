@@ -1,17 +1,14 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from 'axios';
 import {Link} from 'react-router-dom';
 import {Table,Button,Form,Input,Modal} from 'antd';
 import Parameter from '../components/Parameter';
-import {AiOutlineCaretUp,AiOutlineContainer,AiOutlinePlus} from 'react-icons/ai';
-import {GoogleOAuthProvider} from '@react-oauth/google';
+import {AiOutlineContainer,AiOutlinePlus} from 'react-icons/ai';
 const config=require('../config/config');
 
 function Dashboard(props){
     const {profile}=props;
-    const [message,setMessage]=useState("");
     const [dataAvailable,setDataAvailable]=useState(false);
-    const [loading,setLoading]=useState(false);
     const [dashboardData,setDashboardData]=useState([]);
     const [strategyModal,setStrategyModal]=useState(false);
     const [confirmLoading,setConfirmLoading]=useState(false);
@@ -64,24 +61,6 @@ function Dashboard(props){
         console.log('Received values of form:', values);
       };
 
-    function formatData(data){
-        console.log("data: ",data);
-        data.sort((a, b) => {
-            return b.id - a.id;
-        });
-        return data.map((item, index) => (
-            <tr>
-                <td>{item["date"]}</td>
-                <td>{item["description"]}</td>
-                <td>
-                <Link style={{textDecoration:'none'}} to={`/strategy?id=${item["id"]}`}>
-                    <span style={{cursor:"pointer"}}>View Details</span>
-                </Link>
-                </td>
-            </tr>
-            ));
-    }
-
     function compileStrategyData(){
         let tempStrategyData=strategyData;
         let paramString="";
@@ -129,19 +108,17 @@ function Dashboard(props){
         }, 1000);
       };
 
-    function getStrategyList(){
+    const getStrategyList=useCallback(()=>{
         axios.get(config.API_PREFIX+`/dashboard?googleid=${profile.id}`)
         .then(response=>{
-            setMessage(response.data.message);
             console.log("reponse: ",response.data.data);
             setDashboardData(response.data.data);
             setDataAvailable(true);
-            setLoading(false);
         })
         .catch(err=>{
             console.log("err: ",err);
         })
-    }
+    },[profile]);
 
     function addStrategy(){
         setStrategyModal(true);
@@ -154,7 +131,7 @@ function Dashboard(props){
     useEffect(()=>{
         console.log("calling list");
         getStrategyList();
-    },[strategyModal,profile]);
+    },[strategyModal,profile,getStrategyList]);
 
     return(
         <div>
@@ -165,7 +142,7 @@ function Dashboard(props){
                     Add Strategy
                 </Button>
                 <br/><br/>
-                {dataAvailable && dashboardData.length==0 && <div className="placeholder">
+                {dataAvailable && dashboardData.length===0 && <div className="placeholder">
                     Start by adding a strategy!
                 </div>}
                 {dataAvailable && dashboardData.length>0 && <Table columns={columns} dataSource={dashboardData} style={{margin:'auto',maxWidth:'65%'}} pagination={false}/>}
@@ -194,7 +171,7 @@ function Dashboard(props){
                         if (!paramters) {
                             return Promise.reject(new Error('Add atleast one parameter'));
                         }
-                        if (paramters.length==2) {
+                        if (paramters.length===2) {
                             setAddParam(false);
                             return Promise.reject(new Error('Maximum 3 parameters can be added'));
                         }

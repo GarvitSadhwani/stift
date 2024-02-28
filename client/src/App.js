@@ -18,11 +18,10 @@ function App() {
       onError: (error) => console.log('Login Failed:', error)
   });
 
-  let userAccessToken='';
-
   useEffect(
       () => {
           if (user || localStorage.getItem('gat')) {
+            let userAccessToken='';
             console.log("user: ",user);
             if(!localStorage.getItem('gat')){
               userAccessToken=user.access_token;
