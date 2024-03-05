@@ -5,6 +5,7 @@ import Strategy from './pages/Strategy';
 import {AiOutlineStock,AiOutlineGoogle } from 'react-icons/ai';
 import {BrowserRouter as Router,Route,Routes} from 'react-router-dom';
 import Navbar from './navbar/Navbar';
+import Footer from './components/Footer';
 import { googleLogout,useGoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
 import { Button } from 'antd';
@@ -77,6 +78,7 @@ function App() {
             <Route path='/dashboard' element={<Dashboard profile={profile}/>}/>
             <Route path='/strategy' element={<Strategy profile={profile}/>}/>
           </Routes>}
+        <Footer/>
       </div>
     </Router>
   );

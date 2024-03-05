@@ -2,6 +2,17 @@
   text-align: center;
 }
 
+a{
+  text-decoration: none;
+  color: #6c55ed;
+}
+
+.footer{
+  position: absolute;
+  bottom: 20px;
+  left:45%;
+}
+
 .indicator-section{
   border-bottom: 0.5px solid lightgray;
   margin-bottom: 2%;
@@ -48,7 +59,7 @@
 .navbar-user{
   padding:10px;
   font-size:15px;
-  margin-left:80%;
+  margin-left:75%;
   margin-top:auto;
   margin-bottom:auto;
 }
