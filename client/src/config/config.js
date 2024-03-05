@@ -1,5 +1,5 @@
 
-const API_PREFIX='https://64.227.180.233';
+const API_PREFIX='https://stiftserv.gsadhwani.com';
 
 module.exports={
     API_PREFIX
