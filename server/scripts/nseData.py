@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime,timedelta,timezone
 from nsetools import Nse
 from io import BytesIO
+import psycopg2
 
 class NSE():
     def __init__(self, timeout=10):
@@ -15,7 +16,16 @@ class NSE():
             "accept-language": "en-US,en;q=0.9"
         }
         self.timeout = timeout
-        self.session.get(self.base_url, timeout=timeout)
+        try:
+            response = self.session.get(self.base_url, timeout=self.timeout)
+            print("Request status code:", response.status_code)
+            print("Response headers:")
+            for key, value in response.headers.items():
+                print(f"{key}: {value}")
+            print("Response content (first 100 characters):")
+            print(response.text[:100])
+        except requests.exceptions.RequestException as e:
+            print("An error occurred:", e)
         #self.cookies = []
     '''
     def __getCookies(self, renew=False):
@@ -69,15 +79,25 @@ class NSE():
     
 
 if __name__ == '__main__':
-    from datetime import date
     nseObj = NSE()
     nse = Nse()
     today_date = datetime.today().date() +timedelta(days=1)
     today_timestamp = int((today_date - datetime(1970, 1, 1).date()).total_seconds())
-    old_date=today_date-timedelta(days=1000)
+    old_date=today_date-timedelta(days=700)
     old_timestamp = int((old_date - datetime(1970, 1, 1).date()).total_seconds())
 
+    conn = psycopg2.connect(
+        dbname="postgres",
+        user="stift",
+        password="stiftdb",
+        host="localhost",
+        port="5432"
+    )
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM stockcache")
+
     with open('../files/bsedata.json','r') as stockSymbols:
+        print("getting historical data")
         stockSymbolJson=json.load(stockSymbols)
         for stock in stockSymbolJson["0"]:
             #df = nseObj.getHistoricalData(stock["symbol"], 'EQ', date_200_days_ago, today_date)
@@ -93,18 +113,26 @@ if __name__ == '__main__':
                 continue
             
             data_list=df["chart"]["result"][0]["indicators"]
+            if "quote" in data_list and "close" in data_list["quote"][0]:
+                closeArr=data_list["quote"][0]["close"]
+            else:
+                continue
+
+            if len(closeArr)<2 or closeArr[-1]==None or closeArr[-2]==None :
+                continue
+            
+            perChange=((closeArr[-1]-closeArr[-2])/closeArr[-2])*100
+            curClose=closeArr[-1]
+
             if len(data_list)==0:
                 print("not found: ",stock["symbol"])
                 continue
+            cursor.execute("INSERT INTO stockcache(close, change, symbol) VALUES(%s,%s,%s)",(curClose,perChange,stock["symbol"]))
             with open('../stocks/'+stock["symbol"]+'.json', 'w') as json_file:
-                if "quote" in data_list and "close" in data_list["quote"][0]:
-                    data_list={
-                        "quote": [
-                            {
-                                "close": data_list["quote"][0]["close"]
-                            }
-                        ]
-                    }
                 json.dump(data_list, json_file,indent=2)
             print("saved: ",stock["symbol"])
+    
+    conn.commit()
+    cursor.close()
+    conn.close()
     

@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import axios from 'axios';
-import {AiOutlineCaretUp,AiOutlineCaretDown,AiOutlineArrowLeft, AiOutlineLoading, AiFillPlayCircle, AiOutlineEdit} from 'react-icons/ai';
-import { useSearchParams, Link } from "react-router-dom";
-import {Table} from 'antd';
+import {AiOutlineCaretUp,AiOutlineCaretDown,AiOutlineArrowLeft, AiOutlineLoading, AiFillPlayCircle, AiOutlineEdit, AiOutlineDelete} from 'react-icons/ai';
+import { useSearchParams, Link, Navigate, useNavigate } from "react-router-dom";
+import {Table, Modal, InputNumber} from 'antd';
+import {ToastContainer, toast, Flip } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const config=require('../config/config')
 
 function simplifyParams(paramString){
@@ -36,16 +38,24 @@ function simplifyParams(paramString){
     return outputArr;
 }
 
+
+
 function Strategy(props){
     const {profile}=props;
     const [dataAvailable,setDataAvailable]=useState(false);
     const [loading,setLoading]=useState(false);
     const [stockData,setStockData]=useState([]);
-    const [queryParamters]=useSearchParams();
+    const [queryParameters]=useSearchParams();
     const [strategyMetrics,setStrategyMetrics] = useState({});
     const [industryFilter,setIndustryFilter]=useState([]);
-    const id = queryParamters.get("id");
+    const [pageNotFound,setPageNotFound]=useState(false);
+    const [deleteModal,setDeleteModal]=useState(false);
+    const [editModal,setEditModal]=useState(false);
+    const [newParameters,setNewParameters]=useState("");
+    const [strategyError,setStrategyError]=useState(false);
+    const id = queryParameters.get("id");
     console.log("id :",id);
+    const navigate = useNavigate();
 
     const columns = [
         {
@@ -82,7 +92,7 @@ function Strategy(props){
             sorter: (a, b) => a.curClose - b.curClose,
             render:(_,{curClose})=>(
                 <>
-                    <span>{curClose[0].toFixed(2)}</span>
+                    <span>{curClose.toFixed(2)}</span>
                 </>
               )
         },
@@ -95,13 +105,96 @@ function Strategy(props){
         },
       ];
 
+    function handleParamEdit(index,key,value,comp){
+        const lengthAttr=["i_supertrend","i_bbUpper","i_atr","i_ema"];
+        const factorAttr=["i_supertrend","i_bbUpper"];
+        let params=newParameters.length>1?newParameters.split(","):strategyMetrics.parameters.split(",");
+        let leftStr=params[index].split(comp)[0];
+        let rightStr=params[index].split(comp)[1];
+        let leftParamArr=leftStr.split('#');
+        let rightParamArr=rightStr.split('#');
+        switch(key){
+            case 'l1': leftParamArr[1]=value;
+                        break;
+            case 'f1': leftParamArr[2]=value;
+                        break;
+            case 'l2': rightParamArr[1]=value;
+                        break;
+            case 'f2': rightParamArr[2]=value;
+                        break;
+            case 'days':leftParamArr[leftParamArr.length-1]=value;
+                        rightParamArr[rightParamArr.length-1]=value;
+                        break;
+        }
+        let finalParam=[leftParamArr.join('#'),rightParamArr.join('#')].join(comp);
+        params[index]=finalParam;
+        setNewParameters(params.join(','));
+    }
+
+    function simplifyParamsForEdit(paramString){
+        const indicatorDict={
+            "i_supertrend":"Supertrend",
+            "i_emaCross":"EMA Cross",
+            "i_atr":"Average True Range",
+            "i_ema":"Exponential Moving Average (EMA)",
+            "i_bbUpper":"Upper Bollinger Band",
+            "green":"Green",
+            "up":"Up",
+            "red":"Red",
+            "down":"Down",
+            "i_close":"Close Price",
+        }
+        const params = paramString.split(',').filter(Boolean); 
+    
+        const outputArr = params.map((param,index) => {
+            let comparator=param.includes('=')?'=':param.includes('>')?'>':'<';
+            const [leftPart, rightPart] = param.split(comparator);
+            const leftParts = leftPart.split('#');
+            const rightParts = rightPart.split('#');
+            const lastValue = rightParts[rightParts.length - 1];
+    
+            const leftStr = leftParts.slice(1, -1);
+            const rightStr = rightParts.slice(1, -1);
+            return (<div>
+                        {indicatorDict[leftParts[0]]}&nbsp;
+                         <InputNumber placeholder="Length" defaultValue={leftStr[0]} min={1} onChange={(value)=>{handleParamEdit(index,'l1',value,comparator)}}></InputNumber>&nbsp;
+                         {leftStr.length>1?<InputNumber placeholder="Factor" defaultValue={leftStr[1]} min={1} onChange={(value)=>{handleParamEdit(index,'f1',value,comparator)}}></InputNumber>:<></>}&nbsp;
+                         {comparator} &nbsp;
+                         {indicatorDict[rightParts[0]]} &nbsp;
+                         {rightStr.length>0?<span><InputNumber placeholder="Length" defaultValue={rightStr[0]} min={1} onChange={(value)=>{handleParamEdit(index,'l2',value,comparator)}}></InputNumber>&nbsp;</span>:<></>}
+                         {rightStr.length>1?<span><InputNumber placeholder="Factor" defaultValue={rightStr[1]} min={1} onChange={(value)=>{handleParamEdit(index,'f2',value,comparator)}}></InputNumber>&nbsp;</span>:<></>}
+                         since&nbsp;
+                         <InputNumber placeholder="Days" defaultValue={lastValue} min={1} onChange={(value)=>{handleParamEdit(index,'days',value,comparator)}}></InputNumber>&nbsp;
+                         days&nbsp;
+                         <br/><br/>
+                    </div>);
+        });
+    
+        return outputArr;
+    }
+
+    function validateStrategyData(){
+        let valid=true;
+        newParameters.split(',').forEach(param=>{
+            if(param.length<3) return;
+            let comp=param.includes('=')?'=':param.includes('>')?'>':'<';
+            param.split(comp).forEach(p=>{
+                p.split('#').forEach(elem=>{
+                    if(elem.length<1) valid=false;
+                })
+            })
+        })
+        return valid;
+    }
+
     function runStrategy(){
         setDataAvailable(false);
         setLoading(true);
         axios.get(config.API_PREFIX+`/strategy?id=${id}&googleid=${profile.id}`)
         .then(response=>{
             console.log("strat data: ",response);
-            setStockData(response.data.data.filter(obj=>obj.perChange!=null));
+            let recievedStockData=response.data.data.filter(obj=>obj.perChange!=null && obj.perChange!=undefined);
+            setStockData(recievedStockData);
             let industries=response.data.data.map(obj=>{
                 if(obj.industry===' ')return 'Mutual Funds';
                 return obj.industry;
@@ -112,57 +205,210 @@ function Strategy(props){
                 text: industry,
                 value: industry
               })))
-            console.log("indus: ",industryFilter)
+            localStorage.setItem(`strat_${id}`,JSON.stringify(recievedStockData));
             setDataAvailable(true);
             setLoading(false);
         })
         .catch(err=>{
             console.log("err: ",err);
+            navigate("/maintainence");
         })
+    }
+
+    function editStrategy(){
+        if(!validateStrategyData()){
+            setStrategyError(true);
+            return;
+        }
+        else{
+            setStrategyError(false);
+        }
+        setDataAvailable(false);
+        axios.put(config.API_PREFIX+`/strategy?id=${id}&googleid=${profile.id}`,{newparam: newParameters}, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+        .then(response=>{
+            if(response.status===200){
+                console.log("strat data: ",response);
+                localStorage.removeItem(`strat_${id}`);
+                toast.success(`Updated strategy '${strategyMetrics.description}'`, {
+                    position: "bottom-right",
+                    autoClose: 1500,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    theme: "light",
+                    transition: Flip,
+                    });
+                setTimeout(()=>{
+                    setEditModal(false);
+                    window.location.reload();
+                },2000)
+            }
+            else{
+                toast.error(`Error updating '${strategyMetrics.description}'`, {
+                    position: "bottom-right",
+                    autoClose: 1500,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    theme: "light",
+                    transition: Flip,
+                    });
+            }
+        })
+        .catch(err=>{
+            console.log("err: ",err);
+        })
+
+    }
+
+    function deleteStrategy(){
+        setDataAvailable(false);
+        console.log("deleting strat");
+        axios.delete(config.API_PREFIX+`/strategy?id=${id}&googleid=${profile.id}`)
+        .then(response=>{
+            if(response.status===200){
+                console.log("strat data: ",response);
+                setDeleteModal(false);
+                localStorage.removeItem(`strat_${id}`);
+                toast.info(`Deleted strategy '${strategyMetrics.description}'`, {
+                    position: "bottom-right",
+                    autoClose: 1500,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    theme: "light",
+                    transition: Flip,
+                    });
+                setTimeout(()=>{navigate("/");},2000);
+            }
+            else{
+                toast.error(`Error deleting '${strategyMetrics.description}'`, {
+                    position: "bottom-right",
+                    autoClose: 1500,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    theme: "light",
+                    transition: Flip,
+                    });
+            }
+            
+            
+        })
+        .catch(err=>{
+            console.log("err: ",err);
+        })
+        
     }
 
     const getStrategyData=useCallback(()=>{
         axios.get(config.API_PREFIX+`/strategymetrics?id=${id}&googleid=${profile.id}`)
         .then(response=>{
+            if(response.data.data===undefined){
+                console.log("errorPage")
+                setPageNotFound(true);
+                return;
+            }
             setStrategyMetrics(response.data.data);
             console.log("response: ",response.data.data);
         })
         .catch(err=>{
             console.log("err: ",err);
+            navigate("/maintainence");
         })
     },[id,profile]);
 
     useEffect(()=>{
         getStrategyData();
+        let stratData=localStorage.getItem(`strat_${id}`);
+        if(stratData){
+            setDataAvailable(true);
+            setStockData(JSON.parse(stratData));
+        }
     },[getStrategyData]);
+
+    function handleCancel(){
+        setDeleteModal(false);
+        setEditModal(false);
+    }
 
     return(
         <div>
+            {
+                pageNotFound && <Navigate to="/page-not-found" replace={true} />
+            }
+            {
+                deleteModal && <Modal
+                    title="Delete Strategy"
+                    open={deleteModal}
+                    onOk={deleteStrategy}
+                    okText="Yes, delete"
+                    onCancel={handleCancel}
+                    width={1000}
+                >
+                    Are you sure you want to delete strategy '{strategyMetrics.description}'
+                </Modal>
+            }
+            {
+                editModal && <Modal
+                    title="Edit Strategy"
+                    open={editModal}
+                    onOk={editStrategy}
+                    okButtonProps={{ disabled: newParameters.length==0 }}
+                    okText="Save Strategy"
+                    onCancel={handleCancel}
+                    width={1000}
+                >
+                    {
+                        simplifyParamsForEdit(strategyMetrics.parameters).map((p,index)=>{
+                            return (<div>{p}</div>);
+                        })
+                    }
+                    {
+                        strategyError && <div style={{color:'red'}}>Please populate all the fields</div>
+                    }
+                    
+                </Modal>
+            }
             <br/>
             <Link to={`/dashboard`} style={{left:'0'}}>
                 <AiOutlineArrowLeft style={{position:'absolute', left:'5%',marginTop:'10px'}} size={40}/>
             </Link>
             {
-                strategyMetrics.hasOwnProperty("parameters") && <div className="strategy-metrics">
-                    <span className="strategy-metric-desc">{strategyMetrics.description}</span>/
-                    <span className="strategy-metric-element">{strategyMetrics.date}</span>
-                    {!loading && <AiFillPlayCircle className="strategy-button" style={{cursor:"pointer"}} onClick={runStrategy} size={30} />}
-                    {loading && <AiOutlineLoading className="loader strategy-button" size={30}/>}
-                    <AiOutlineEdit style={{cursor:"pointer",marginLeft:'10px'}} size={30}/>
+                strategyMetrics.hasOwnProperty("parameters") && <div>
+                     <div className="strategy-metrics">
+                        <span className="strategy-metric-desc">{strategyMetrics.description}</span>/
+                        <span className="strategy-metric-element">{strategyMetrics.date}</span>
+                        {!loading && <AiFillPlayCircle className="strategy-button icon-run" onClick={runStrategy} size={27} />}
+                        {loading && <AiOutlineLoading className="loader strategy-button" size={27}/>}
+                        <AiOutlineEdit className="icon-edit"  onClick={()=>{setEditModal(true);}} size={27} />
+                        <AiOutlineDelete className="icon-delete" onClick={()=>{setDeleteModal(true);}} size={27}/>
+                    </div>
+                    <div className="strategy-metrics-col">
+                        {
+                            simplifyParams(strategyMetrics.parameters).map(p=>{
+                                return (<div className="strategy-metric-element">{p}</div>);
+                            })
+                        }
+                        <br/>
+                        
+                    </div>
                 </div>
+                   
             }
-            {
-                strategyMetrics.hasOwnProperty("parameters") && <div className="strategy-metrics-col">
-                    {
-                        simplifyParams(strategyMetrics.parameters).map(p=>{
-                            return (<div className="strategy-metric-element">{p}</div>);
-                        })
-                    }
-                    <br/>
-                    
-                </div>
-            }
-            
+            <ToastContainer
+                transition= {Flip}
+                position="bottom-right"
+                autoClose={2000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+            />
             <div className="stockContainer">
                 <br/>
                 {!dataAvailable && <div className="placeholder">
@@ -171,7 +417,8 @@ function Strategy(props){
                 {dataAvailable && stockData.length===0 && <div className="placeholder">
                     Oops, no stocks satisfy these criterias!
                 </div>}
-                {dataAvailable && <Table columns={columns} dataSource={stockData} />}
+                <br/>
+                {dataAvailable && stockData.length>0 && <Table columns={columns} dataSource={stockData} style={{margin:'auto',maxWidth:'90%'}}/>}
             </div>
         </div>
     );

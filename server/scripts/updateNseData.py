@@ -1,7 +1,7 @@
 import requests
 import json
 import pandas as pd
-from datetime import datetime,timedelta
+from datetime import datetime,timedelta,timezone
 from nsetools import Nse
 from io import BytesIO
 
@@ -15,7 +15,16 @@ class NSE():
             "accept-language": "en-US,en;q=0.9"
         }
         self.timeout = timeout
-        self.session.get(self.base_url, timeout=timeout)
+        try:
+            response = self.session.get(self.base_url, timeout=self.timeout)
+            print("Request status code:", response.status_code)
+            print("Response headers:")
+            for key, value in response.headers.items():
+                print(f"{key}: {value}")
+            print("Response content (first 100 characters):")
+            print(response.text[:100])
+        except requests.exceptions.RequestException as e:
+            print("An error occurred:", e)
         #self.cookies = []
     '''
     def __getCookies(self, renew=False):
@@ -26,14 +35,16 @@ class NSE():
         self.cookies = dict(r.cookies)
         return self.__getCookies()
     '''
-    def getHistoricalData(self, symbol, series, from_date, to_date):
+    def getHistoricalData(self, symbol, from_date, to_date):
         try:
-            url = "/api/historical/cm/equity?symbol={0}&series=[%22{1}%22]&from={2}&to={3}&csv=true".format(symbol.replace('&', '%26'), series, from_date.strftime('%d-%m-%Y'), to_date.strftime('%d-%m-%Y'))
-            r = self.session.get(self.base_url + url, timeout=self.timeout)
-            df = pd.read_csv(BytesIO(r.content), sep=',', thousands=',')
-            df = df.rename(columns={'Date ': 'date', 'series ': 'series', 'OPEN ': 'open', 'HIGH ': 'high', 'LOW ': 'low', 'PREV. CLOSE ': 'prev_close', 'ltp ': 'ltp', 'close ': 'close', '52W H ': 'hi_52_wk', '52W L ': 'lo_52_wk', 'VOLUME ': 'trdqty', 'VALUE ': 'trdval', 'No of trades ': 'trades'})
-            df.date = pd.to_datetime(df.date).dt.strftime('%Y-%m-%d')
-            return df
+            #url = "/api/historical/cm/equity?symbol={0}&series=[%22{1}%22]&from={2}&to={3}&csv=true".format(symbol.replace('&', '%26'), series, from_date.strftime('%d-%m-%Y'), to_date.strftime('%d-%m-%Y'))
+            #r = self.session.get(self.base_url + url, timeout=self.timeout)
+            url='https://query2.finance.yahoo.com/v8/finance/chart/'+symbol+'.BO?formatted=true&crumb=kJzbrRThriu&lang=en-US&region=US&includeAdjustedClose=false&interval=1d&period1='+str(from_date)+'&period2='+str(to_date)+'&events=capitalGain%7Cdiv%7Csplit&useYfid=true'
+            r = self.session.get(url, timeout=self.timeout)
+            #df = pd.read_csv(BytesIO(r.content), sep=',', thousands=',')
+            #df = df.rename(columns={'Date ': 'date', 'series ': 'series', 'OPEN ': 'open', 'HIGH ': 'high', 'LOW ': 'low', 'PREV. CLOSE ': 'prev_close', 'ltp ': 'ltp', 'close ': 'close', '52W H ': 'hi_52_wk', '52W L ': 'lo_52_wk', 'VOLUME ': 'trdqty', 'VALUE ': 'trdval', 'No of trades ': 'trades'})
+            #df.date = pd.to_datetime(df.date).dt.strftime('%Y-%m-%d')
+            return r.json()
         except:
             print("not found: ",symbol)
             return None
@@ -67,25 +78,34 @@ class NSE():
     
 
 if __name__ == '__main__':
-    from datetime import date
     nseObj = NSE()
     nse = Nse()
-    today_date = datetime.today().date()
-    date_200_days_ago=today_date-timedelta(days=1)
+    today_date = datetime.today().date() +timedelta(days=1)
+    today_timestamp = int((today_date - datetime(1970, 1, 1).date()).total_seconds())
+    old_date=today_date-timedelta(days=1)
+    old_timestamp = int((old_date - datetime(1970, 1, 1).date()).total_seconds())
 
     with open('../files/bsedata.json','r') as stockSymbols:
+        print("getting historical data")
         stockSymbolJson=json.load(stockSymbols)
         for stock in stockSymbolJson["0"]:
-            df = nseObj.getHistoricalData(stock["symbol"], 'EQ', date_200_days_ago, today_date)
-            selected_columns = ['date','open','high','low','close']  # Replace these numbers with the actual column indices you want to keep
-            df_selected=df[selected_columns]
-            new_data_list = df_selected.to_dict(orient='records')
-            print("new: ",stock["symbol"],new_data_list)
-            '''
-            with open('../stocks/'+stock["symbol"]+'.json', 'r') as stock_file:
-                data_list=json.load(stock_file)
+            #df = nseObj.getHistoricalData(stock["symbol"], 'EQ', date_200_days_ago, today_date)
+            df = nseObj.getHistoricalData(stock["symbol"], old_timestamp, today_timestamp)
+            
+            #selected_columns = ['date','open','high','low','close']  # Replace these numbers with the actual column indices you want to keep
+            #df_selected=df[selected_columns]
+            #data_list = df_selected.to_dict(orient='records')
+
+            if df==None:
+                continue
+            if df["chart"]["result"]==None:
+                continue
+            
+            data_list=df["chart"]["result"][0]["indicators"]
+            if len(data_list)==0:
+                print("not found: ",stock["symbol"])
+                continue
             with open('../stocks/'+stock["symbol"]+'.json', 'w') as json_file:
-                json.dump(data_list, json_file)
-            print("saved: ",stock["symbol"])
-            '''
+                json.dump(data_list, json_file,indent=2)
+            print("updated: ",stock["symbol"])
     

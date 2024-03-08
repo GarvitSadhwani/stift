@@ -1,7 +1,7 @@
 import pkg from 'pg';
 
 const pool = new pkg.Pool({
-  user: 'postgres',
+  user: 'stift',
   host: 'localhost',
   database: 'postgres',
   password: 'stiftdb',

@@ -46,7 +46,7 @@ export default function Parameter({field, index, onModify, onRemove}){
             delete tempData.l1;
         }
         else{
-            tempData["l1"]=e.target.value;
+            tempData["l1"]=e;
         } 
         setParamData(tempData);
         onModify(index+indexOffset,paramData);
@@ -58,7 +58,7 @@ export default function Parameter({field, index, onModify, onRemove}){
             delete tempData.f1;
         }
         else{
-            tempData["f1"]=e.target.value;
+            tempData["f1"]=e;
         } 
         setParamData(tempData);
         onModify(index+indexOffset,paramData);
@@ -70,7 +70,7 @@ export default function Parameter({field, index, onModify, onRemove}){
             delete tempData.l2;
         }
         else{
-            tempData["l2"]=e.target.value;
+            tempData["l2"]=e;
         } 
         setParamData(tempData);
         onModify(index+indexOffset,paramData);
@@ -82,7 +82,7 @@ export default function Parameter({field, index, onModify, onRemove}){
             delete tempData.f2;
         }
         else{
-            tempData["f2"]=e.target.value;
+            tempData["f2"]=e;
         } 
         setParamData(tempData);
         onModify(index+indexOffset,paramData);
@@ -124,20 +124,20 @@ export default function Parameter({field, index, onModify, onRemove}){
                 <Select.Option value="i_emaCross">EMA Cross</Select.Option>
             </Select>
             </Form.Item>
-            {lengthAttr.includes(selectedIndicator) && <Form.Item>
-                <Input placeholder="Length" onChange={onl1Change}/>
+            {lengthAttr.includes(selectedIndicator) && <Form.Item rules={[{required: true}]}>
+                <InputNumber min={0} placeholder="Length" onChange={onl1Change}/>
             </Form.Item>}
-            {factorAttr.includes(selectedIndicator) && <Form.Item>
-                <Input placeholder="Factor" onChange={onf1Change}/>
+            {factorAttr.includes(selectedIndicator) && <Form.Item rules={[{required: true}]}>
+                <InputNumber min={0} placeholder="Factor" onChange={onf1Change}/>
             </Form.Item>}
             {
-                selectedIndicator==="i_emaCross" && <Form.Item>
-                    <Input placeholder="Short" onChange={onl1Change}/>
+                selectedIndicator==="i_emaCross" && <Form.Item rules={[{required: true}]}>
+                    <InputNumber min={0} placeholder="Short" onChange={onl1Change}/>
                 </Form.Item>
             }
             {
-                selectedIndicator==="i_emaCross" && <Form.Item>
-                    <Input placeholder="Long" onChange={onf1Change}/>
+                selectedIndicator==="i_emaCross" && <Form.Item rules={[{required: true}]}>
+                    <InputNumber min={0} placeholder="Long" onChange={onf1Change}/>
                 </Form.Item>
             }
             
@@ -192,17 +192,17 @@ export default function Parameter({field, index, onModify, onRemove}){
                 <Select.Option value="i_emaCross">EMA Cross</Select.Option>
             </Select>}
             </Form.Item>
-            {lengthAttr.includes(secondIndicator) && <Form.Item>
-                <Input placeholder="Length" onChange={onl2Change}/>
+            {lengthAttr.includes(secondIndicator) && <Form.Item rules={[{required: true}]} >
+                <InputNumber min={0} placeholder="Length" onChange={onl2Change}/>
             </Form.Item>}
-            {factorAttr.includes(secondIndicator) && <Form.Item>
-                <Input placeholder="Factor" onChange={onf2Change}/>
+            {factorAttr.includes(secondIndicator) && <Form.Item rules={[{required: true}]} >
+                <InputNumber min={0} placeholder="Factor" onChange={onf2Change}/>
             </Form.Item>}
             {
-                secondIndicator==="i_emaCross" && <Form.Item>
-                    <Input placeholder="Short" onChange={onl2Change}/>
-                </Form.Item> && <Form.Item>
-                    <Input placeholder="Long" onChange={onf2Change}/>
+                secondIndicator==="i_emaCross" && <Form.Item rules={[{required: true}]} >
+                    <InputNumber min={0} placeholder="Short" onChange={onl2Change}/>
+                </Form.Item> && <Form.Item rules={[{required: true}]} >
+                    <InputNumber min={0} placeholder="Long" onChange={onf2Change}/>
                 </Form.Item>
             }
         </Space>
