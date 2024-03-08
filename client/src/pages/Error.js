@@ -4,7 +4,7 @@ export default function Error(){
         <div>
             <div className='landing-title'>404. That's an error.</div>
             <div>I couldn't find what you're looking for</div>
-            <img src={error} className='error-img'/>
+            <img src={error} className='error-img' alt='error404'/>
         </div>
     );
 }

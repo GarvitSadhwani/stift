@@ -152,7 +152,7 @@ function Dashboard(props){
             console.log("err: ",err);
             navigate("/maintainence");
         })
-    },[profile]);
+    },[profile,navigate]);
 
     function addStrategy(){
         setStrategyModal(true);

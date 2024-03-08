@@ -4,7 +4,7 @@ export default function Maintainence(){
         <div>
             <div className='landing-title'>We are under maintainence.</div>
             <div>Please come back later</div>
-            <img src={maintainence} className='error-img'/>
+            <img src={maintainence} className='error-img' alt='underMaintainence'/>
         </div>
     );
 }
