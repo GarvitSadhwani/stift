@@ -1,4 +1,5 @@
 import { promises as fsPromises } from 'fs';
+import {getStockCacheData} from './DbUtils.js';
 
 function i_atr_util(stock,duration){
     let stockSmall={"open":[],"high":[],"low":[],"close":[]}
@@ -186,16 +187,7 @@ export async function i_supertrend(symbol,length,multiplier,numIntervals){
     return supertrend.slice(-numIntervals);
 }
 
-export async function getPercentChange(symbol){
-    let stockFile;
-    try{
-        stockFile = await fsPromises.readFile('./stocks/'+symbol+'.json', 'utf8');
-    }
-    catch(err){
-        return NaN;
-    }
-    const stock=JSON.parse(stockFile);
-
-    const [oldPrice,newPrice]=stock.quote[0].close.slice(-2);
-    return ((newPrice-oldPrice)/oldPrice)*100;
+export async function getPercentChangeAndClose(symbol){
+    let resp=await getStockCacheData(symbol);
+    return [resp.change,resp.close];
 }

@@ -31,6 +31,39 @@ export async function getIdData(jobId,googleid){
     return result.rows[0];
 }
 
+export async function deleteIdData(jobId,googleid){
+  const query = {
+      text: 'DELETE FROM jobs WHERE id = $1 AND googleid = $2',
+      values: [jobId,googleid]
+    };
+  
+  let result=await pool.query(query);
+
+  return result.rows[0];
+}
+
+export async function updateIdData(jobId,googleid,newparam){
+  const query = {
+      text: 'UPDATE jobs SET parameters=$1 WHERE id = $2 AND googleid = $3',
+      values: [newparam,jobId,googleid]
+    };
+  
+  let result=await pool.query(query);
+
+  return result.rows[0];
+}
+
+export async function getStockCacheData(symbol){
+  const query = {
+    text: 'SELECT * from stockcache WHERE symbol = $1',
+    values: [symbol]
+  };
+
+  let result=await pool.query(query);
+
+  return result.rows[0];
+}
+
 
 
 

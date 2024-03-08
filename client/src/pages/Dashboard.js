@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import axios from 'axios';
-import {Link} from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import {Table,Button,Form,Input,Modal} from 'antd';
 import Parameter from '../components/Parameter';
-import {AiOutlineContainer,AiOutlinePlus} from 'react-icons/ai';
+import {AiOutlineFundView ,AiOutlinePlus} from 'react-icons/ai';
+import {ToastContainer, toast, Flip } from 'react-toastify';
 const config=require('../config/config');
 
 function Dashboard(props){
@@ -15,6 +16,25 @@ function Dashboard(props){
     const [strategyData,setStrategyData]=useState([]);
     const [addParam,setAddParam]=useState(true);
     const [paramDesc,setParamDesc]=useState("");
+    const [strategyError,setStrategyError]=useState(false);
+
+    const lengthAttr=["i_supertrend","i_bbUpper","i_atr","i_ema"];
+    const factorAttr=["i_supertrend","i_bbUpper"];
+    const navigate = useNavigate();
+
+    const validateStrategyData=()=>{
+        if(strategyData.length===0) return false;
+        let valid=true;
+        strategyData.forEach(param=>{
+            if(param.ind1===undefined || param.ind2===undefined) valid=false;
+            if((lengthAttr.includes(param.ind1) || param.ind1==='i_emaCross') && param.l1===undefined) valid=false;
+            if((lengthAttr.includes(param.ind2) || param.ind2==='i_emaCross') && param.l2===undefined) valid=false;
+            if((factorAttr.includes(param.ind1) || param.ind1==='i_emaCross') && param.f1===undefined) valid=false;
+            if((factorAttr.includes(param.ind2) || param.ind2==='i_emaCross') && param.f2===undefined) valid=false;
+            if(param.comp===undefined || param.days===undefined) valid=false;
+        })
+        return valid;
+    }
 
     const columns = [
         {
@@ -24,14 +44,12 @@ function Dashboard(props){
             render:(_,{description,id})=>(
                 <>
                 <span style={{marginRight:'20px'}}>{description}</span>
-                <Link style={{textDecoration:'none'}} to={`/strategy?id=${id}`}>
-                    <AiOutlineContainer style={{marginTop:'5px'}} size={15}/>
-                </Link>
+                <a href={`/strategy?id=${id}`}><AiOutlineFundView style={{position:'relative',top:'8px'}} size={25}/></a>
                 </>
               )
         },
         {
-          title: 'Date added',
+          title: 'Added on',
           dataIndex: 'date',
           defaultSortOrder: 'descend',
           width:400,
@@ -82,6 +100,13 @@ function Dashboard(props){
     }
 
     const handleOk = () => {
+        if(!validateStrategyData()){
+            setStrategyError(true);
+            return;
+        }
+        else{
+            setStrategyError(false);
+        }
         setConfirmLoading(true);
         let paramString=compileStrategyData();
         let dateToday=new Date();
@@ -106,6 +131,14 @@ function Dashboard(props){
           setStrategyModal(false);
           setConfirmLoading(false);
         }, 1000);
+        toast.success(`Saved strategy '${paramDesc}'`, {
+            position: "bottom-right",
+            autoClose: 1500,
+            hideProgressBar: false,
+            closeOnClick: true,
+            theme: "light",
+            transition: Flip,
+            });
       };
 
     const getStrategyList=useCallback(()=>{
@@ -117,6 +150,7 @@ function Dashboard(props){
         })
         .catch(err=>{
             console.log("err: ",err);
+            navigate("/maintainence");
         })
     },[profile]);
 
@@ -204,7 +238,23 @@ function Dashboard(props){
                     )}
                 </Form.List>
                 </Form>
+                {
+                    strategyError && <div style={{color:'red'}}>Please populate all the fields</div>
+                }
             </Modal>
+            <ToastContainer
+                transition= {Flip}
+                position="bottom-right"
+                autoClose={2000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+            />
         </div>
     );
 }

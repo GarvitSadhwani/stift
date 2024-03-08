@@ -1,8 +1,7 @@
-import {getIdData,getData, insertStrategy} from './DbUtils.js';
+import {getIdData,getData, insertStrategy, deleteIdData, updateIdData} from './DbUtils.js';
 import { promises as fsPromises } from 'fs';
 import * as indicatorFunctions from './Indicators.js';
-import {APIS_FILE,AV_API_KEY,STOCKS_FILE} from '../config/config.js'
-import util from 'util';
+import {APIS_FILE,STOCKS_FILE} from '../config/config.js';
 
 function parseParam(parameter){
     let ind=(parameter.match(/i_/g) || []).length;
@@ -42,6 +41,16 @@ export async function getJobs(googleid){
 export async function getJobById(id,googleid){
     const jobs=await getIdData(id,googleid);
     let response=jobs;
+    return response;
+}
+
+export async function deleteJobById(id,googleid){
+    const response=await deleteIdData(id,googleid);
+    return response;
+}
+
+export async function updateJob(id,googleid,newparam){
+    const response=await updateIdData(id,googleid,newparam);
     return response;
 }
 
@@ -124,14 +133,16 @@ export async function runJobActual(jobId,googleid){
         stocks=qualifiedStocks;
         qualifiedStocks=[]; 
     }
-    //console.log("filtered stocks: ",stocks);
+    console.log("filtered stocks: ",stocks.length);
     let response=await Promise.all(stocksJson["0"]
                     .filter(stock=>stocks.includes(stock.symbol))
-                    .map(async stock => ({
+                    .map(async stock => {
+                        const [perChange,curClose]= await indicatorFunctions["getPercentChangeAndClose"](stock.symbol);
+                        return{
                         ...stock,
-                        perChange: await indicatorFunctions["getPercentChange"](stock.symbol),
-                        curClose: await indicatorFunctions["i_close"](stock.symbol,1),
-                    }))
+                        "perChange": perChange,
+                        "curClose": curClose
+                    }})
                     );
     response=response.sort((a, b) => b.perChange - a.perChange);
     return response;

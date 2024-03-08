@@ -1,1 +1,2 @@
 to access db: psql -U postgres -d postgres
+login as stift user: sudo -u stift psql -d postgres

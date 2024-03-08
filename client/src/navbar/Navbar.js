@@ -8,6 +8,7 @@ function Navbar(props){
     return(
         <div className="navbar-container">
             <div className='navbar-title' onClick={()=>{navigate('/')}} style={{cursor:'pointer'}}>Stift<AiOutlineStock size={25}/></div>
+            <div style={{margin:'auto',height:'40px',marginRight:'10px',display:'flex'}} >
             <div className="navbar-user">Hi, {profile.given_name}!</div>
             <Button style={{margin:'auto',height:'40px'}} onClick={logOutFunc}>
                 <div style={{display:'flex',alignContent:'center'}}>
@@ -15,6 +16,8 @@ function Navbar(props){
                 <div style={{marginLeft:'10px',marginTop:'3px'}}>Logout</div>
                 </div>
             </Button>
+            </div>
+            
         </div>
     );
 }
