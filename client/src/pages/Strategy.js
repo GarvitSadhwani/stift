@@ -106,8 +106,6 @@ function Strategy(props){
       ];
 
     function handleParamEdit(index,key,value,comp){
-        const lengthAttr=["i_supertrend","i_bbUpper","i_atr","i_ema"];
-        const factorAttr=["i_supertrend","i_bbUpper"];
         let params=newParameters.length>1?newParameters.split(","):strategyMetrics.parameters.split(",");
         let leftStr=params[index].split(comp)[0];
         let rightStr=params[index].split(comp)[1];
@@ -125,6 +123,8 @@ function Strategy(props){
             case 'days':leftParamArr[leftParamArr.length-1]=value;
                         rightParamArr[rightParamArr.length-1]=value;
                         break;
+            default: console.log("default");
+                     break;
         }
         let finalParam=[leftParamArr.join('#'),rightParamArr.join('#')].join(comp);
         params[index]=finalParam;
@@ -193,7 +193,7 @@ function Strategy(props){
         axios.get(config.API_PREFIX+`/strategy?id=${id}&googleid=${profile.id}`)
         .then(response=>{
             console.log("strat data: ",response);
-            let recievedStockData=response.data.data.filter(obj=>obj.perChange!=null && obj.perChange!=undefined);
+            let recievedStockData=response.data.data.filter(obj=>obj.perChange!==null && obj.perChange!==undefined);
             setStockData(recievedStockData);
             let industries=response.data.data.map(obj=>{
                 if(obj.industry===' ')return 'Mutual Funds';
@@ -316,7 +316,7 @@ function Strategy(props){
             console.log("err: ",err);
             navigate("/maintainence");
         })
-    },[id,profile]);
+    },[id,profile,navigate]);
 
     useEffect(()=>{
         getStrategyData();
@@ -325,7 +325,7 @@ function Strategy(props){
             setDataAvailable(true);
             setStockData(JSON.parse(stratData));
         }
-    },[getStrategyData]);
+    },[getStrategyData,id]);
 
     function handleCancel(){
         setDeleteModal(false);
@@ -354,7 +354,7 @@ function Strategy(props){
                     title="Edit Strategy"
                     open={editModal}
                     onOk={editStrategy}
-                    okButtonProps={{ disabled: newParameters.length==0 }}
+                    okButtonProps={{ disabled: newParameters.length===0 }}
                     okText="Save Strategy"
                     onCancel={handleCancel}
                     width={1000}

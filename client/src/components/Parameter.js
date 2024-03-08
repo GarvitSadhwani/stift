@@ -1,4 +1,4 @@
-import {Button,Input,InputNumber,Form,Select,Space} from 'antd';
+import {Button,InputNumber,Form,Select,Space} from 'antd';
 import { useState } from 'react';
 
 export default function Parameter({field, index, onModify, onRemove}){
