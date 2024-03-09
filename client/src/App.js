@@ -3,7 +3,7 @@ import {useState,useEffect} from 'react';
 import Dashboard from './pages/Dashboard';
 import Strategy from './pages/Strategy';
 import stift from './components/stift.png';
-import {BrowserRouter as Router,Route,Routes} from 'react-router-dom';
+import {Route,Routes} from 'react-router-dom';
 import Navbar from './navbar/Navbar';
 import Footer from './components/Footer';
 import Error from './pages/Error';
@@ -62,7 +62,6 @@ function App() {
   };
   
   return (
-    <Router>
       <div className="App">
         {!profile && 
         <div className='landing-container'>
@@ -90,17 +89,18 @@ function App() {
           
           </div>
         }
-        {profile && profile.hasOwnProperty('name') && <Navbar logOutFunc={logOut} profile={profile}/>}
-        {profile && profile.hasOwnProperty('name') && <Routes>
+        {profile && profile.hasOwnProperty('name') && <div>
+          <Navbar logOutFunc={logOut} profile={profile}/>
+          <Routes>
             <Route path='/' exact element={<Dashboard profile={profile}/>}/>
             <Route path='/dashboard' element={<Dashboard profile={profile}/>}/>
             <Route path='/strategy' element={<Strategy profile={profile}/>}/>
             <Route path='/maintainence' element={<Maintainence/>}/>
             <Route path='/*' element={<Error/>}/>
-          </Routes>}
+          </Routes>
+        </div>}
         <Footer/>
       </div>
-    </Router>
   );
 }
 
