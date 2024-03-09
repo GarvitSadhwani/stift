@@ -190,7 +190,7 @@ function Dashboard(props){
                 onCancel={handleCancel}
                 width={1000}
             >
-                <Input placeholder="Description" onChange={(e)=>{setParamDesc(e.target.value);}}/>
+                <Input placeholder="Description" style={{width:'80%',marginLeft:'10px'}} onChange={(e)=>{setParamDesc(e.target.value);}}/>
                 <br/><br/>
                 <Form
                     name="parameter_form"
