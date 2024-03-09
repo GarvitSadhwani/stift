@@ -1,4 +1,0 @@
-[[redirects]]
-  from = "/*"
-  to = "https://64.227.180.233/:splat"
-  status = 200
