@@ -53,6 +53,7 @@ function Strategy(props){
     const [editModal,setEditModal]=useState(false);
     const [newParameters,setNewParameters]=useState("");
     const [strategyError,setStrategyError]=useState(false);
+    const screenWidth = window.innerWidth;
     const id = queryParameters.get("id");
     console.log("id :",id);
     const navigate = useNavigate();
@@ -372,17 +373,21 @@ function Strategy(props){
             }
             <br/>
             <Link to={`/dashboard`} style={{left:'0'}}>
-                <AiOutlineArrowLeft style={{position:'absolute', left:'5%',marginTop:'10px'}} size={40}/>
+                <AiOutlineArrowLeft className="strategy-back" size={screenWidth>=768?40:30}/>
             </Link>
             {
                 strategyMetrics.hasOwnProperty("parameters") && <div>
                      <div className="strategy-metrics">
-                        <span className="strategy-metric-desc">{strategyMetrics.description}</span>/
-                        <span className="strategy-metric-element">{strategyMetrics.date}</span>
-                        {!loading && <AiFillPlayCircle className="strategy-button icon-run" onClick={runStrategy} size={27} />}
-                        {loading && <AiOutlineLoading className="loader strategy-button" size={27}/>}
-                        <AiOutlineEdit className="icon-edit"  onClick={()=>{setEditModal(true);}} size={27} />
-                        <AiOutlineDelete className="icon-delete" onClick={()=>{setDeleteModal(true);}} size={27}/>
+                        <div>
+                            <span className="strategy-metric-desc">{strategyMetrics.description}</span>/
+                            <span className="strategy-metric-element">{strategyMetrics.date}</span>
+                        </div>
+                        <div className="strategy-button">
+                            {!loading && <AiFillPlayCircle className="icon-run" onClick={runStrategy} size={27} />}
+                            {loading && <AiOutlineLoading className="loader" size={27}/>}
+                            <AiOutlineEdit className="icon-edit"  onClick={()=>{setEditModal(true);}} size={27} />
+                            <AiOutlineDelete className="icon-delete" onClick={()=>{setDeleteModal(true);}} size={27}/>
+                        </div>
                     </div>
                     <div className="strategy-metrics-col">
                         {
