@@ -21,6 +21,7 @@ function Dashboard(props){
     const lengthAttr=["i_supertrend","i_bbUpper","i_atr","i_ema"];
     const factorAttr=["i_supertrend","i_bbUpper"];
     const navigate = useNavigate();
+    const screenWidth = window.innerWidth;
 
     const validateStrategyData=()=>{
         if(strategyData.length===0) return false;
@@ -52,7 +53,7 @@ function Dashboard(props){
           title: 'Added on',
           dataIndex: 'date',
           defaultSortOrder: 'descend',
-          width:400,
+          width:screenWidth>=768?400:150,
           sorter: (a, b) => a.id - b.id,
         }
       ];
@@ -179,7 +180,7 @@ function Dashboard(props){
                 {dataAvailable && dashboardData.length===0 && <div className="placeholder">
                     Start by adding a strategy!
                 </div>}
-                {dataAvailable && dashboardData.length>0 && <Table columns={columns} dataSource={dashboardData} style={{margin:'auto',maxWidth:'65%'}} pagination={false}/>}
+                {dataAvailable && dashboardData.length>0 && <Table columns={columns} dataSource={dashboardData} className="dashboard-table" pagination={false}/>}
             </div>
             <Modal
                 title="New Strategy"

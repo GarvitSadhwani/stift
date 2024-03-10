@@ -67,8 +67,7 @@ function App() {
         <div className='landing-container'>
           <div className='landing-title'><img src={stift} alt='logo' height={'100px'}/></div>
           <div>
-          <p style={{justifyContent:'left',width:'90%',margin:'auto',marginBottom:'50px'}}><span style={{fontSize:'20px'}}>Welcome!</span><br/><br/>Stift is a stock screener for NSE. You can input custom strategies to filter stocks based on specific criteria, receiving tailored results promptly. With advanced encryption and stringent security measures, Stift ensures the utmost protection of user data. 
-            Stift's intuitive interface and daily updates make stock selection effortless for both seasoned investors and newcomers. Ready to explore more?</p>
+          <p className='lending-desc'><span style={{fontSize:'20px'}}>Welcome!</span><br/><br/>Stift offers customizable stock screening for the NSE, providing tailored results promptly. With advanced encryption, stringent security measures, and an intuitive interface, it ensures data protection while simplifying stock selection for both seasoned investors and newcomers. Ready to explore more?</p>
           <button className="gsi-material-button" onClick={login}>
             <div className="gsi-material-button-state"></div>
             <div className="gsi-material-button-content-wrapper">
