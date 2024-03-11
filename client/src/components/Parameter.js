@@ -1,4 +1,5 @@
 import {Button,InputNumber,Form,Select,Space} from 'antd';
+import {AiOutlineCloseCircle } from 'react-icons/ai';
 import { useState } from 'react';
 
 export default function Parameter({field, index, onModify, onRemove}){
@@ -8,6 +9,7 @@ export default function Parameter({field, index, onModify, onRemove}){
     let indexOffset=0;
     const lengthAttr=["i_supertrend","i_bbUpper","i_atr","i_ema"];
     const factorAttr=["i_supertrend","i_bbUpper"];
+    const screenWidth = window.innerWidth;
 
     if(field){
         indexOffset=1;
@@ -100,7 +102,10 @@ export default function Parameter({field, index, onModify, onRemove}){
     return (
         <div className='indicator-section'>
         {
-        onRemove && <Button onClick={onRemove} style={{position:'absolute',left:'83%'}}>Remove Parameter</Button>
+            onRemove && screenWidth>=768 && <Button onClick={onRemove} className='remove-parameter'>Remove Parameter</Button>
+        }
+        {
+            onRemove && screenWidth<768 && <AiOutlineCloseCircle  onClick={onRemove} className='remove-parameter'/>
         }
         <Space>
             <Form.Item
@@ -184,12 +189,10 @@ export default function Parameter({field, index, onModify, onRemove}){
                 <Select.Option value="down">Down</Select.Option>
             </Select>}
             {selectedIndicator!=='i_supertrend' && selectedIndicator!=='i_emaCross' && <Select placeholder="Indicator" onChange={onSecondIndicatorChange}>
-                <Select.Option value="i_supertrend">Supertrend</Select.Option>
                 <Select.Option value="i_ema">Exponential Moving Average (EMA)</Select.Option>
                 <Select.Option value="i_atr">Average True Range (ATR)</Select.Option>
                 <Select.Option value="i_bbUpper">Upper Bollinger Band</Select.Option>
                 <Select.Option value="i_close">Close Price</Select.Option>
-                <Select.Option value="i_emaCross">EMA Cross</Select.Option>
             </Select>}
             </Form.Item>
             {lengthAttr.includes(secondIndicator) && <Form.Item rules={[{required: true}]} >
