@@ -55,8 +55,13 @@ function Strategy(props){
     const [strategyError,setStrategyError]=useState(false);
     const screenWidth = window.innerWidth;
     const id = queryParameters.get("id");
+    const date = new Date();
+    const dateToday=''+date.getDate()+'-'+date.getMonth()+'-'+date.getFullYear();
     console.log("id :",id);
     const navigate = useNavigate();
+    if(isNaN(id)){
+        navigate("/page-not-found");
+    }
 
     const columns = [
         {
@@ -67,13 +72,15 @@ function Strategy(props){
         {
             title: 'Symbol',
             dataIndex: 'symbol',
-            width:200
+            width:200,
+            fixed:'left'
         },
         {
           title: 'Percent Change',
           dataIndex: 'perChange',
           defaultSortOrder: 'descend',
           width:200,
+          fixed:'left',
           sorter: (a, b) => a.perChange - b.perChange,
           render:(_,{perChange})=>(
             <>
@@ -194,8 +201,9 @@ function Strategy(props){
         axios.get(config.API_PREFIX+`/strategy?id=${id}&googleid=${profile.id}`)
         .then(response=>{
             console.log("strat data: ",response);
-            let recievedStockData=response.data.data.filter(obj=>obj.perChange!==null && obj.perChange!==undefined);
-            setStockData(recievedStockData);
+            let recievedStockData={"data":response.data.data.filter(obj=>obj.perChange!==null && obj.perChange!==undefined)};
+            recievedStockData["date"]=dateToday;
+            setStockData(recievedStockData["data"]);
             let industries=response.data.data.map(obj=>{
                 if(obj.industry===' ')return 'Mutual Funds';
                 return obj.industry;
@@ -260,6 +268,14 @@ function Strategy(props){
         })
         .catch(err=>{
             console.log("err: ",err);
+            toast.error(`Error updating '${strategyMetrics.description}'`, {
+                position: "bottom-right",
+                autoClose: 1500,
+                hideProgressBar: false,
+                closeOnClick: true,
+                theme: "light",
+                transition: Flip,
+                });
         })
 
     }
@@ -298,6 +314,14 @@ function Strategy(props){
         })
         .catch(err=>{
             console.log("err: ",err);
+            toast.error(`Error deleting '${strategyMetrics.description}'`, {
+                position: "bottom-right",
+                autoClose: 1500,
+                hideProgressBar: false,
+                closeOnClick: true,
+                theme: "light",
+                transition: Flip,
+                });
         })
         
     }
@@ -321,12 +345,19 @@ function Strategy(props){
 
     useEffect(()=>{
         getStrategyData();
-        let stratData=localStorage.getItem(`strat_${id}`);
+        let stratDataStr=localStorage.getItem(`strat_${id}`);
+        let stratData=JSON.parse(stratDataStr);
         if(stratData){
-            setDataAvailable(true);
-            setStockData(JSON.parse(stratData));
+            if(stratData["date"]!==undefined && stratData["date"]===dateToday){
+                setDataAvailable(true);
+                setStockData(stratData["data"]);
+            }
+            else{
+                localStorage.removeItem(`strat_${id}`);
+            }
+            
         }
-    },[getStrategyData,id]);
+    },[getStrategyData,id,dateToday]);
 
     function handleCancel(){
         setDeleteModal(false);
@@ -423,7 +454,9 @@ function Strategy(props){
                     Oops, no stocks satisfy these criterias!
                 </div>}
                 <br/>
-                {dataAvailable && stockData.length>0 && <Table columns={columns} dataSource={stockData} style={{margin:'auto',maxWidth:'90%'}}/>}
+                {dataAvailable && stockData.length>0 && <Table columns={columns} dataSource={stockData} style={{margin:'auto',maxWidth:'90%'}} scroll={{
+                    x: true
+                    }}/>}
             </div>
         </div>
     );

@@ -3,7 +3,7 @@ import axios from 'axios';
 import {useNavigate} from 'react-router-dom';
 import {Table,Button,Form,Input,Modal} from 'antd';
 import Parameter from '../components/Parameter';
-import {AiOutlineFundView ,AiOutlinePlus} from 'react-icons/ai';
+import {AiOutlineFundView ,AiFillPlusCircle} from 'react-icons/ai';
 import {ToastContainer, toast, Flip } from 'react-toastify';
 const config=require('../config/config');
 
@@ -171,9 +171,9 @@ function Dashboard(props){
     return(
         <div>
             <br/>
-            <div className="">
+            <div style={{height:'90vh'}}>
                 <br/><br/>
-                <Button type="primary" icon={<AiOutlinePlus />} size={20} onClick={addStrategy}>
+                <Button type="primary" icon={<AiFillPlusCircle />} size={20} onClick={addStrategy}>
                     Add Strategy
                 </Button>
                 <br/><br/>
@@ -191,7 +191,7 @@ function Dashboard(props){
                 onCancel={handleCancel}
                 width={1000}
             >
-                <Input placeholder="Description" style={{width:'80%',marginLeft:'10px'}} onChange={(e)=>{setParamDesc(e.target.value);}}/>
+                <Input placeholder="Description" style={screenWidth>=768?{width:'80%'}:{width:'80%'}} onChange={(e)=>{setParamDesc(e.target.value);}}/>
                 <br/><br/>
                 <Form
                     name="parameter_form"
@@ -225,14 +225,7 @@ function Dashboard(props){
                             </Form.Item>
                             ))}
                             <Form.Item>
-                            {addParam && <Button
-                                type="primary"
-                                shape="circle"
-                                onClick={() => {onStrategyParameterAdd();add();}}
-                                icon={<AiOutlinePlus />}
-                                size="large"
-                            >
-                            </Button>}
+                            {addParam && <AiFillPlusCircle onClick={() => {onStrategyParameterAdd();add();}} size={40} style={{cursor:'pointer',color:'#1677ff'}}/>}
                             <Form.ErrorList errors={errors} />
                             </Form.Item>
                         </>

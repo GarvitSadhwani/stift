@@ -126,6 +126,15 @@ a{
     max-width:65%;
   }
 
+  .disclaimer-title{
+    padding:10px;
+    font-size:50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10%;
+  }
+
   .footer{
     position: absolute;
     bottom: 20px;
@@ -273,6 +282,11 @@ a{
     margin-top: 10%;
   }
 
+  .remove-parameter{
+    position:absolute;
+    left:83%;
+  }
+
   .strategy-metrics{
     display: flex;
     justify-content: left;
@@ -317,6 +331,15 @@ a{
     max-width:90%;
   }
 
+  .disclaimer-title{
+    padding:10px;
+    font-size:50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid lightgray;
+  }
+
   .footer{
     position: absolute;
     bottom: 10px;
@@ -356,8 +379,9 @@ a{
 
   .indicator-section{
     border-bottom: 0.5px solid lightgray;
-    margin-bottom: 2%;
-    padding: 1%;
+    margin-bottom: 3%;
+    padding: 5%;
+    padding-left:0;
   }
 
   .loader{
@@ -375,9 +399,10 @@ a{
 
   .landing-desc{
     justify-content:center;
-    width:80%;
+    width:100%;
     margin:auto;
     margin-bottom:50px;
+    padding-top: 10%;
   }
 
   .landing-title{
@@ -438,31 +463,17 @@ a{
     top:12%;
   }
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  }
-
-  th, td {
-    padding: 12px;
-    border-bottom: 1px solid #ddd;
-  }
-
-  th {
-    background-color: #f2f2f2;
-    font-weight: bold;
-  }
-
-  tr:hover {
-    background-color: #f5f5f5;
-  }
-
   .placeholder{
+    margin-top: 20%;
     font-size:25px;
     color: lightgray;
+  }
+
+  .remove-parameter{
+    position:absolute;
+    left:93%;
+    font-size: 20px;
+    color: gray;
   }
 
   .strategy-metrics{
@@ -481,6 +492,7 @@ a{
     margin-right:auto;
     margin-bottom: 0;
     width: 80%;
+    border-bottom: 1px solid lightgray;
   }
 
   .strategy-metric-element{
