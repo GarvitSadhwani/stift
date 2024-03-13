@@ -196,7 +196,7 @@ function Dashboard(props){
                 navigate("/maintainence");
             }
         })
-    },[profile,navigate]);
+    },[profile,navigate,logOutFunc]);
 
     function addStrategy(){
         setStrategyModal(true);

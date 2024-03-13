@@ -381,7 +381,7 @@ function Strategy(props){
                 navigate("/maintainence");
             }
         })
-    },[id,profile,navigate]);
+    },[id,profile,navigate,logOutFunc]);
 
     useEffect(()=>{
         getStrategyData();
