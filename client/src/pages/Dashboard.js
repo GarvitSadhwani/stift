@@ -4,11 +4,11 @@ import {useNavigate} from 'react-router-dom';
 import {Table,Button,Form,Input,Modal} from 'antd';
 import Parameter from '../components/Parameter';
 import {AiOutlineFundView ,AiFillPlusCircle} from 'react-icons/ai';
-import {ToastContainer, toast, Flip } from 'react-toastify';
+import {toast, Flip } from 'react-toastify';
 const config=require('../config/config');
 
 function Dashboard(props){
-    const {profile}=props;
+    const {profile, logOutFunc}=props;
     const [dataAvailable,setDataAvailable]=useState(false);
     const [dashboardData,setDashboardData]=useState([]);
     const [strategyModal,setStrategyModal]=useState(false);
@@ -120,30 +120,58 @@ function Dashboard(props){
             googleid:profile.id,
             email:profile.email
         };
-        axios.post(config.API_PREFIX+'/storestrategy',strategy)
+        const authToken=localStorage.getItem('git');
+        axios.post(config.API_PREFIX+'/storestrategy',strategy,{
+            headers:{
+                Authorization: `Bearer ${authToken}`,
+                "Content-Type":'application/json'
+            }
+        })
         .then(response=>{
             console.log("response: ",response);
+            setTimeout(() => {
+                setStrategyModal(false);
+                setConfirmLoading(false);
+              }, 1000);
+              toast.success(`Saved strategy '${paramDesc}'`, {
+                  position: "bottom-right",
+                  autoClose: 1500,
+                  hideProgressBar: false,
+                  closeOnClick: true,
+                  theme: "light",
+                  transition: Flip,
+                  });
         })
         .catch(err=>{
             console.log("err: ",err);
+            if(err.response && (err.response.status===401 || err.response.status===403) ){
+                toast.error(`Unauthorized, please login again`, {
+                    position: "bottom-right",
+                    autoClose: 1500,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    theme: "light",
+                    transition: Flip,
+                    });
+                setTimeout(() => {
+                    logOutFunc();
+                }, 2000);
+            }
+            else{
+                navigate("/maintainence");
+            }
         })
         console.log("strategy: ",strategy);
-        setTimeout(() => {
-          setStrategyModal(false);
-          setConfirmLoading(false);
-        }, 1000);
-        toast.success(`Saved strategy '${paramDesc}'`, {
-            position: "bottom-right",
-            autoClose: 1500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            theme: "light",
-            transition: Flip,
-            });
       };
 
     const getStrategyList=useCallback(()=>{
-        axios.get(config.API_PREFIX+`/dashboard?googleid=${profile.id}`)
+        const authToken = localStorage.getItem('git');
+        axios.get(config.API_PREFIX+`/dashboard?googleid=${profile.id}`,{
+            headers:{
+                Authorization: `Bearer ${authToken}`,
+                "Content-Type":'application/json'
+            }
+        })
         .then(response=>{
             console.log("reponse: ",response.data.data);
             setDashboardData(response.data.data);
@@ -151,7 +179,22 @@ function Dashboard(props){
         })
         .catch(err=>{
             console.log("err: ",err);
-            navigate("/maintainence");
+            if(err.response && (err.response.status===401 || err.response.status===403) ){
+                toast.error(`Unauthorized, please login again`, {
+                    position: "bottom-right",
+                    autoClose: 1500,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    theme: "light",
+                    transition: Flip,
+                    });
+                setTimeout(() => {
+                    logOutFunc();
+                }, 2000);
+            }
+            else{
+                navigate("/maintainence");
+            }
         })
     },[profile,navigate]);
 
@@ -236,19 +279,6 @@ function Dashboard(props){
                     strategyError && <div style={{color:'red'}}>Please populate all the fields</div>
                 }
             </Modal>
-            <ToastContainer
-                transition= {Flip}
-                position="bottom-right"
-                autoClose={2000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light"
-            />
         </div>
     );
 }

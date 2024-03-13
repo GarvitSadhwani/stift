@@ -3,7 +3,7 @@ import axios from 'axios';
 import {AiOutlineCaretUp,AiOutlineCaretDown,AiOutlineArrowLeft, AiOutlineLoading, AiFillPlayCircle, AiOutlineEdit, AiOutlineDelete} from 'react-icons/ai';
 import { useSearchParams, Link, Navigate, useNavigate } from "react-router-dom";
 import {Table, Modal, InputNumber} from 'antd';
-import {ToastContainer, toast, Flip } from 'react-toastify';
+import {toast, Flip } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 const config=require('../config/config')
 
@@ -41,7 +41,7 @@ function simplifyParams(paramString){
 
 
 function Strategy(props){
-    const {profile}=props;
+    const {profile, logOutFunc}=props;
     const [dataAvailable,setDataAvailable]=useState(false);
     const [loading,setLoading]=useState(false);
     const [stockData,setStockData]=useState([]);
@@ -198,7 +198,13 @@ function Strategy(props){
     function runStrategy(){
         setDataAvailable(false);
         setLoading(true);
-        axios.get(config.API_PREFIX+`/strategy?id=${id}&googleid=${profile.id}`)
+        const authToken=localStorage.getItem('git');
+        axios.get(config.API_PREFIX+`/strategy?id=${id}&googleid=${profile.id}`,{
+            headers:{
+                Authorization: `Bearer ${authToken}`,
+                "Content-Type":'application/json'
+            }
+        })
         .then(response=>{
             console.log("strat data: ",response);
             let recievedStockData={"data":response.data.data.filter(obj=>obj.perChange!==null && obj.perChange!==undefined)};
@@ -220,7 +226,22 @@ function Strategy(props){
         })
         .catch(err=>{
             console.log("err: ",err);
-            navigate("/maintainence");
+            if(err.response && (err.response.status===401 || err.response.status===403) ){
+                toast.error(`Unauthorized, please login again`, {
+                    position: "bottom-right",
+                    autoClose: 1500,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    theme: "light",
+                    transition: Flip,
+                    });
+                setTimeout(() => {
+                    logOutFunc();
+                }, 2000);
+            }
+            else{
+                navigate("/maintainence");
+            }
         })
     }
 
@@ -233,42 +254,17 @@ function Strategy(props){
             setStrategyError(false);
         }
         setDataAvailable(false);
+        const authToken=localStorage.getItem('git');
         axios.put(config.API_PREFIX+`/strategy?id=${id}&googleid=${profile.id}`,{newparam: newParameters}, {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          })
-        .then(response=>{
-            if(response.status===200){
-                console.log("strat data: ",response);
-                localStorage.removeItem(`strat_${id}`);
-                toast.success(`Updated strategy '${strategyMetrics.description}'`, {
-                    position: "bottom-right",
-                    autoClose: 1500,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    theme: "light",
-                    transition: Flip,
-                    });
-                setTimeout(()=>{
-                    setEditModal(false);
-                    window.location.reload();
-                },2000)
-            }
-            else{
-                toast.error(`Error updating '${strategyMetrics.description}'`, {
-                    position: "bottom-right",
-                    autoClose: 1500,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    theme: "light",
-                    transition: Flip,
-                    });
+            headers:{
+                Authorization: `Bearer ${authToken}`,
+                "Content-Type":'application/json'
             }
         })
-        .catch(err=>{
-            console.log("err: ",err);
-            toast.error(`Error updating '${strategyMetrics.description}'`, {
+        .then(response=>{
+            console.log("strat data: ",response);
+            localStorage.removeItem(`strat_${id}`);
+            toast.success(`Updated strategy '${strategyMetrics.description}'`, {
                 position: "bottom-right",
                 autoClose: 1500,
                 hideProgressBar: false,
@@ -276,6 +272,29 @@ function Strategy(props){
                 theme: "light",
                 transition: Flip,
                 });
+            setTimeout(()=>{
+                setEditModal(false);
+                window.location.reload();
+            },2000)
+            
+        })
+        .catch(err=>{
+            if(err.response && (err.response.status===401 || err.response.status===403) ){
+                toast.error(`Unauthorized, please login again`, {
+                    position: "bottom-right",
+                    autoClose: 1500,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    theme: "light",
+                    transition: Flip,
+                    });
+                setTimeout(() => {
+                    logOutFunc();
+                }, 2000);
+            }
+            else{
+                navigate("/maintainence");
+            }
         })
 
     }
@@ -283,38 +302,18 @@ function Strategy(props){
     function deleteStrategy(){
         setDataAvailable(false);
         console.log("deleting strat");
-        axios.delete(config.API_PREFIX+`/strategy?id=${id}&googleid=${profile.id}`)
-        .then(response=>{
-            if(response.status===200){
-                console.log("strat data: ",response);
-                setDeleteModal(false);
-                localStorage.removeItem(`strat_${id}`);
-                toast.info(`Deleted strategy '${strategyMetrics.description}'`, {
-                    position: "bottom-right",
-                    autoClose: 1500,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    theme: "light",
-                    transition: Flip,
-                    });
-                setTimeout(()=>{navigate("/");},2000);
+        const authToken=localStorage.getItem('git');
+        axios.delete(config.API_PREFIX+`/strategy?id=${id}&googleid=${profile.id}`,{
+            headers:{
+                Authorization: `Bearer ${authToken}`,
+                "Content-Type":'application/json'
             }
-            else{
-                toast.error(`Error deleting '${strategyMetrics.description}'`, {
-                    position: "bottom-right",
-                    autoClose: 1500,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    theme: "light",
-                    transition: Flip,
-                    });
-            }
-            
-            
         })
-        .catch(err=>{
-            console.log("err: ",err);
-            toast.error(`Error deleting '${strategyMetrics.description}'`, {
+        .then(response=>{
+            console.log("strat data: ",response);
+            setDeleteModal(false);
+            localStorage.removeItem(`strat_${id}`);
+            toast.info(`Deleted strategy '${strategyMetrics.description}'`, {
                 position: "bottom-right",
                 autoClose: 1500,
                 hideProgressBar: false,
@@ -322,12 +321,38 @@ function Strategy(props){
                 theme: "light",
                 transition: Flip,
                 });
+            setTimeout(()=>{navigate("/");},2000);
+        })
+        .catch(err=>{
+            console.log("err: ",err);
+            if(err.response && (err.response.status===401 || err.response.status===403) ){
+                toast.error(`Unauthorized, please login again`, {
+                    position: "bottom-right",
+                    autoClose: 1500,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    theme: "light",
+                    transition: Flip,
+                    });
+                setTimeout(() => {
+                    logOutFunc();
+                }, 2000);
+            }
+            else{
+                navigate("/maintainence");
+            }
         })
         
     }
 
     const getStrategyData=useCallback(()=>{
-        axios.get(config.API_PREFIX+`/strategymetrics?id=${id}&googleid=${profile.id}`)
+        const authToken=localStorage.getItem('git');
+        axios.get(config.API_PREFIX+`/strategymetrics?id=${id}&googleid=${profile.id}`,{
+            headers:{
+                Authorization: `Bearer ${authToken}`,
+                "Content-Type":'application/json'
+            }
+        })
         .then(response=>{
             if(response.data.data===undefined){
                 console.log("errorPage")
@@ -339,7 +364,22 @@ function Strategy(props){
         })
         .catch(err=>{
             console.log("err: ",err);
-            navigate("/maintainence");
+            if(err.response && (err.response.status===401 || err.response.status===403) ){
+                toast.error(`Unauthorized, please login again`, {
+                    position: "bottom-right",
+                    autoClose: 1500,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    theme: "light",
+                    transition: Flip,
+                    });
+                setTimeout(() => {
+                    logOutFunc();
+                }, 2000);
+            }
+            else{
+                navigate("/maintainence");
+            }
         })
     },[id,profile,navigate]);
 
@@ -432,19 +472,6 @@ function Strategy(props){
                 </div>
                    
             }
-            <ToastContainer
-                transition= {Flip}
-                position="bottom-right"
-                autoClose={2000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light"
-            />
             <div className="stockContainer">
                 <br/>
                 {!dataAvailable && <div className="placeholder">
