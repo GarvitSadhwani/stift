@@ -10,27 +10,59 @@ import Error from './pages/Error';
 import { googleLogout,useGoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
 import Maintainence from './pages/Maintainence';
+import {ToastContainer, toast, Flip } from 'react-toastify';
+const config =require('./config/config');
 
 function App() {
   const [ user, setUser ] = useState([]);
   const [ profile, setProfile ] = useState({});
 
   const login = useGoogleLogin({
-      onSuccess: (codeResponse) => setUser(codeResponse),
-      onError: (error) => console.log('Login Failed:', error)
+    onSuccess: async ({ code }) => {
+      await axios.post(config.API_PREFIX+'/googleauth', {  
+        code,
+      }).then((tokens)=>{
+        setUser(tokens.data);
+      })
+      .catch((err)=>{
+        console.log("auther: ",err)
+        toast.info(`Stift is under maintainence, please try again later`, {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          theme: "light",
+          transition: Flip,
+          });
+      });
+      
+    },
+    onError: ()=>{
+      toast.info(`Stift is under maintainence, please try again later`, {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        theme: "light",
+        transition: Flip,
+        });
+    },
+    flow: 'auth-code'
   });
 
   useEffect(
       () => {
-          if (user || localStorage.getItem('gat')) {
+          if (user || (localStorage.getItem('gat') && localStorage.getItem('git'))) {
             let userAccessToken='';
+            let userIdToken='';
             console.log("user: ",user);
             if(!localStorage.getItem('gat')){
               userAccessToken=user.access_token;
+              userIdToken=user.id_token;
             }
             else{
               userAccessToken=localStorage.getItem('gat');
-              console.log("local")
+              userIdToken=localStorage.getItem('git');
             }
             axios
               .get(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${userAccessToken}`, {
@@ -39,16 +71,15 @@ function App() {
                       Accept: 'application/json'
                   }
               })
-                .then((res) => {
-                  setProfile(res.data);
-                  localStorage.setItem("gat",userAccessToken);
-                  console.log("profile: ",res.data);
+              .then((res) => {
+                console.log("google res: ",res);
+                setProfile(res.data);
+                localStorage.setItem("gat",userAccessToken);
+                localStorage.setItem("git",userIdToken);
               })
               .catch((err) => {
                 console.log(err);
-                console.log("remove tok")
-                setProfile(null);
-                localStorage.removeItem('gat');
+                logOut();
               });
           }
       },
@@ -58,6 +89,7 @@ function App() {
   const logOut = () => {
       googleLogout();
       localStorage.removeItem('gat');
+      localStorage.removeItem('git');
       setProfile(null);
   };
   
@@ -91,13 +123,26 @@ function App() {
         {profile && profile.hasOwnProperty('name') && <div>
           <Navbar logOutFunc={logOut} profile={profile}/>
           <Routes>
-            <Route path='/' exact element={<Dashboard profile={profile}/>}/>
-            <Route path='/dashboard' element={<Dashboard profile={profile}/>}/>
-            <Route path='/strategy' element={<Strategy profile={profile}/>}/>
+            <Route path='/' exact element={<Dashboard profile={profile} logOutFunc={logOut}/>}/>
+            <Route path='/dashboard' element={<Dashboard profile={profile} logOutFunc={logOut}/>}/>
+            <Route path='/strategy' element={<Strategy profile={profile} logOutFunc={logOut}/>}/>
             <Route path='/maintainence' element={<Maintainence/>}/>
             <Route path='/*' element={<Error/>}/>
           </Routes>
         </div>}
+        <ToastContainer
+                transition= {Flip}
+                position="bottom-right"
+                autoClose={2000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+            />
         <Footer/>
       </div>
   );
