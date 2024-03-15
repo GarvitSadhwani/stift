@@ -1,9 +1,9 @@
 import './App.css';
-import {useState,useEffect} from 'react';
+import {useState,useEffect, useCallback} from 'react';
 import Dashboard from './pages/Dashboard';
 import Strategy from './pages/Strategy';
 import stift from './components/stift.png';
-import {Route,Routes} from 'react-router-dom';
+import {Route,Routes,useLocation} from 'react-router-dom';
 import Navbar from './navbar/Navbar';
 import Footer from './components/Footer';
 import Error from './pages/Error';
@@ -16,6 +16,9 @@ const config =require('./config/config');
 function App() {
   const [ user, setUser ] = useState([]);
   const [ profile, setProfile ] = useState({});
+  const [ rt, setRt] = useState('');
+  const [ expiryTime, setExpiryTime]=useState(null);
+  const location = useLocation();
 
   const login = useGoogleLogin({
     onSuccess: async ({ code }) => {
@@ -32,7 +35,7 @@ function App() {
           hideProgressBar: false,
           closeOnClick: true,
           theme: "light",
-          transition: Flip,
+           transition: Flip,
           });
       });
       
@@ -50,15 +53,53 @@ function App() {
     flow: 'auth-code'
   });
 
+  const reLogin=useCallback(()=>{
+    console.log("called relog")
+    if(rt!==''){
+      console.log("trying relog ",rt);
+      axios.post(config.API_PREFIX+'/googleauth-refresh', {  
+        refreshToken:rt
+      }).then((tokens)=>{
+        setUser(tokens.data);
+        setRt(tokens.data.refresh_token);
+        setExpiryTime(tokens.data.expiry_date/1000);
+        console.log("token refreshed, logged again")
+      })
+      .catch((err)=>{
+        console.log("failed to relogin: ",err)
+        logOut();
+      });
+    }
+    else{
+      logOut();
+    }
+  },[rt]);
+
   useEffect(
       () => {
+          const checkTokenExpiry = () => {
+            console.log("exp ",expiryTime)
+            if (!localStorage.getItem('gat') || !expiryTime) return;
+            const now = new Date().getTime() / 1000;
+            if (expiryTime < now) {
+              console.log("relogging");
+              reLogin();
+            }
+            console.log("login not required");
+          };
+      
+          const tokenExpiryTimer = setInterval(checkTokenExpiry, 60000); 
+      
+          checkTokenExpiry();
           if (user || (localStorage.getItem('gat') && localStorage.getItem('git'))) {
             let userAccessToken='';
             let userIdToken='';
             console.log("user: ",user);
-            if(!localStorage.getItem('gat')){
+            if(!localStorage.getItem('gat')){ 
               userAccessToken=user.access_token;
               userIdToken=user.id_token;
+              setRt(user.refresh_token);
+              setExpiryTime(user.expiry_date/1000);
             }
             else{
               userAccessToken=localStorage.getItem('gat');
@@ -82,8 +123,9 @@ function App() {
                 logOut();
               });
           }
+          return () => clearInterval(tokenExpiryTimer);
       },
-      [ user ]
+      [ user, rt, expiryTime, reLogin ]
   );
 
   const logOut = () => {
@@ -143,7 +185,7 @@ function App() {
                 pauseOnHover
                 theme="light"
             />
-        <Footer/>
+        {(location.pathname!=='/strategy' || window.screenWidth>=768) && <Footer/>}
       </div>
   );
 }

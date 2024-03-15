@@ -107,7 +107,7 @@ export default function Parameter({field, index, onModify, onRemove}){
         {
             onRemove && screenWidth<768 && <AiOutlineCloseCircle  onClick={onRemove} className='remove-parameter'/>
         }
-        <Space>
+        <Space wrap>
             <Form.Item
                 {...field}
                 validateTrigger={['onIndicatorChange', 'onBlur']}
@@ -120,7 +120,7 @@ export default function Parameter({field, index, onModify, onRemove}){
                 ]}
                 style={selectedIndicator===""?{minWidth:'150px'}:{}}
             >
-            <Select placeholder="Indicator" onChange={onIndicatorChange}>
+            <Select showSearch placeholder="Indicator" onChange={onIndicatorChange} style={{width:250}}>
                 <Select.Option value="i_supertrend">Supertrend</Select.Option>
                 <Select.Option value="i_ema">Exponential Moving Average (EMA)</Select.Option>
                 <Select.Option value="i_atr">Average True Range (ATR)</Select.Option>
@@ -160,7 +160,7 @@ export default function Parameter({field, index, onModify, onRemove}){
             ]}   
             style={{minWidth:'150px'}}
         >
-        <Select placeholder="is" onChange={onCompChange}>
+        <Select showSearch placeholder="is" onChange={onCompChange}>
           <Select.Option value="<" disabled={selectedIndicator==='i_emaCross' || selectedIndicator==='i_supertrend'}>is Less than</Select.Option>
           <Select.Option value=">" disabled={selectedIndicator==='i_emaCross' || selectedIndicator==='i_supertrend'}>is Greater than</Select.Option>
           <Select.Option value="=">is Equal to</Select.Option>
@@ -168,7 +168,7 @@ export default function Parameter({field, index, onModify, onRemove}){
         </Form.Item>
         </Space>
         <br/>
-        <Space>
+        <Space wrap>
             <Form.Item
                 validateTrigger={['onIndicatorChange', 'onBlur']}
                 rules={[
@@ -180,15 +180,15 @@ export default function Parameter({field, index, onModify, onRemove}){
                 ]}
                 style={secondIndicator===""?{minWidth:'150px'}:{}}
             >
-            {selectedIndicator==='i_supertrend' && <Select placeholder="Indicator" onChange={onSecondIndicatorChange}>
+            {selectedIndicator==='i_supertrend' && <Select placeholder="Indicator" onChange={onSecondIndicatorChange} style={{width:250}}>
                 <Select.Option value="green">Green</Select.Option>
                 <Select.Option value="red">Red</Select.Option>
             </Select>}
-            {selectedIndicator==='i_emaCross' && <Select placeholder="Indicator" onChange={onSecondIndicatorChange}>
+            {selectedIndicator==='i_emaCross' && <Select placeholder="Indicator" onChange={onSecondIndicatorChange} style={{width:250}}>
                 <Select.Option value="up">Up</Select.Option>
                 <Select.Option value="down">Down</Select.Option>
             </Select>}
-            {selectedIndicator!=='i_supertrend' && selectedIndicator!=='i_emaCross' && <Select placeholder="Indicator" onChange={onSecondIndicatorChange}>
+            {selectedIndicator!=='i_supertrend' && selectedIndicator!=='i_emaCross' && <Select placeholder="Indicator" onChange={onSecondIndicatorChange} style={{width:250}}>
                 <Select.Option value="i_ema">Exponential Moving Average (EMA)</Select.Option>
                 <Select.Option value="i_atr">Average True Range (ATR)</Select.Option>
                 <Select.Option value="i_bbUpper">Upper Bollinger Band</Select.Option>
