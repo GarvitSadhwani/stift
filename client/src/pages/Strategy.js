@@ -67,13 +67,15 @@ function Strategy(props){
         {
           title: 'Company',
           dataIndex: 'name',
-          width:400
+          width:400,
+          key:'company'
         },
         {
             title: 'Symbol',
             dataIndex: 'symbol',
             width:200,
-            fixed:'left'
+            fixed:'left',
+            key:'symbol'
         },
         {
           title: 'Percent Change',
@@ -81,6 +83,7 @@ function Strategy(props){
           defaultSortOrder: 'descend',
           width:200,
           fixed:'left',
+          key:'perchange',
           sorter: (a, b) => a.perChange - b.perChange,
           render:(_,{perChange})=>(
             <>
@@ -97,6 +100,7 @@ function Strategy(props){
             title: 'Price',
             dataIndex: 'curClose',
             width:200,
+            key:'price',
             sorter: (a, b) => a.curClose - b.curClose,
             render:(_,{curClose})=>(
                 <>
@@ -108,6 +112,7 @@ function Strategy(props){
           title: 'Industry',
           dataIndex: 'industry',
           width:300,
+          key:'industry',
           filters: industryFilter,
           onFilter: (value, record) => record.industry.indexOf(value) === 0,
         },
@@ -163,7 +168,7 @@ function Strategy(props){
     
             const leftStr = leftParts.slice(1, -1);
             const rightStr = rightParts.slice(1, -1);
-            return (<div>
+            return (<div key={index}>
                         {indicatorDict[leftParts[0]]}&nbsp;
                          <InputNumber placeholder="Length" defaultValue={leftStr[0]} min={1} onChange={(value)=>{handleParamEdit(index,'l1',value,comparator)}}></InputNumber>&nbsp;
                          {leftStr.length>1?<InputNumber placeholder="Factor" defaultValue={leftStr[1]} min={1} onChange={(value)=>{handleParamEdit(index,'f1',value,comparator)}}></InputNumber>:<></>}&nbsp;
@@ -207,7 +212,7 @@ function Strategy(props){
         })
         .then(response=>{
             console.log("strat data: ",response);
-            let recievedStockData={"data":response.data.data.filter(obj=>obj.perChange!==null && obj.perChange!==undefined)};
+            let recievedStockData={"data":response.data.data.filter(obj=>obj.perChange!==null && obj.perChange!==undefined).map((obj, index) => ({ ...obj, key: index }))};
             recievedStockData["date"]=dateToday;
             setStockData(recievedStockData["data"]);
             let industries=response.data.data.map(obj=>{
@@ -433,7 +438,7 @@ function Strategy(props){
                 >
                     {
                         simplifyParamsForEdit(strategyMetrics.parameters).map((p,index)=>{
-                            return (<div>{p}</div>);
+                            return (<div key={index}>{p}</div>);
                         })
                     }
                     {
@@ -462,8 +467,8 @@ function Strategy(props){
                     </div>
                     <div className="strategy-metrics-col">
                         {
-                            simplifyParams(strategyMetrics.parameters).map(p=>{
-                                return (<div className="strategy-metric-element">{p}</div>);
+                            simplifyParams(strategyMetrics.parameters).map((p,index)=>{
+                                return (<div key={index} className="strategy-metric-element">{p}</div>);
                             })
                         }
                         <br/>
@@ -481,9 +486,7 @@ function Strategy(props){
                     Oops, no stocks satisfy these criterias!
                 </div>}
                 <br/>
-                {dataAvailable && stockData.length>0 && <Table columns={columns} dataSource={stockData} style={{margin:'auto',maxWidth:'90%'}} scroll={{
-                    x: true
-                    }}/>}
+                {dataAvailable && stockData.length>0 && <Table columns={columns} dataSource={stockData} style={{margin:'auto',maxWidth:'90%'}} scroll={{x: true}}/>}
             </div>
         </div>
     );
