@@ -57,7 +57,6 @@ function Strategy(props){
     const id = queryParameters.get("id");
     const date = new Date();
     const dateToday=''+date.getDate()+'-'+date.getMonth()+'-'+date.getFullYear();
-    console.log("id :",id);
     const navigate = useNavigate();
     if(isNaN(id)){
         navigate("/page-not-found");
@@ -136,8 +135,7 @@ function Strategy(props){
             case 'days':leftParamArr[leftParamArr.length-1]=value;
                         rightParamArr[rightParamArr.length-1]=value;
                         break;
-            default: console.log("default");
-                     break;
+            default: break;
         }
         let finalParam=[leftParamArr.join('#'),rightParamArr.join('#')].join(comp);
         params[index]=finalParam;
@@ -170,12 +168,12 @@ function Strategy(props){
             const rightStr = rightParts.slice(1, -1);
             return (<div key={index}>
                         {indicatorDict[leftParts[0]]}&nbsp;
-                         <InputNumber placeholder="Length" defaultValue={leftStr[0]} min={1} onChange={(value)=>{handleParamEdit(index,'l1',value,comparator)}}></InputNumber>&nbsp;
-                         {leftStr.length>1?<InputNumber placeholder="Factor" defaultValue={leftStr[1]} min={1} onChange={(value)=>{handleParamEdit(index,'f1',value,comparator)}}></InputNumber>:<></>}&nbsp;
+                         {leftParts[0]!=='i_close' && <InputNumber placeholder="Length" defaultValue={leftStr[0]} min={1} onChange={(value)=>{handleParamEdit(index,'l1',value,comparator)}}></InputNumber>}&nbsp;
+                         {(leftStr.length>1 && leftParts[0]!=='i_close') && <InputNumber placeholder="Factor" defaultValue={leftStr[1]} min={1} onChange={(value)=>{handleParamEdit(index,'f1',value,comparator)}}></InputNumber>}&nbsp;
                          {comparator} &nbsp;
                          {indicatorDict[rightParts[0]]} &nbsp;
-                         {rightStr.length>0?<span><InputNumber placeholder="Length" defaultValue={rightStr[0]} min={1} onChange={(value)=>{handleParamEdit(index,'l2',value,comparator)}}></InputNumber>&nbsp;</span>:<></>}
-                         {rightStr.length>1?<span><InputNumber placeholder="Factor" defaultValue={rightStr[1]} min={1} onChange={(value)=>{handleParamEdit(index,'f2',value,comparator)}}></InputNumber>&nbsp;</span>:<></>}
+                         {rightStr.length>0 && <span><InputNumber placeholder="Length" defaultValue={rightStr[0]} min={1} onChange={(value)=>{handleParamEdit(index,'l2',value,comparator)}}></InputNumber>&nbsp;</span>}
+                         {rightStr.length>1 && <span><InputNumber placeholder="Factor" defaultValue={rightStr[1]} min={1} onChange={(value)=>{handleParamEdit(index,'f2',value,comparator)}}></InputNumber>&nbsp;</span>}
                          since&nbsp;
                          <InputNumber placeholder="Days" defaultValue={lastValue} min={1} onChange={(value)=>{handleParamEdit(index,'days',value,comparator)}}></InputNumber>&nbsp;
                          days&nbsp;
@@ -211,9 +209,11 @@ function Strategy(props){
             }
         })
         .then(response=>{
-            console.log("strat data: ",response);
             let recievedStockData={"data":response.data.data.filter(obj=>obj.perChange!==null && obj.perChange!==undefined).map((obj, index) => ({ ...obj, key: index }))};
+            let runTime=new Date();
             recievedStockData["date"]=dateToday;
+            recievedStockData["time"]=runTime.getHours()+":"+runTime.getMinutes();
+            if(recievedStockData["time"].length<5) recievedStockData["time"]='0'+recievedStockData["time"]; 
             setStockData(recievedStockData["data"]);
             let industries=response.data.data.map(obj=>{
                 if(obj.industry===' ')return 'Mutual Funds';
@@ -230,7 +230,6 @@ function Strategy(props){
             setLoading(false);
         })
         .catch(err=>{
-            console.log("err: ",err);
             if(err.response && (err.response.status===401 || err.response.status===403) ){
                 toast.error(`Unauthorized, please login again`, {
                     position: "bottom-right",
@@ -267,7 +266,6 @@ function Strategy(props){
             }
         })
         .then(response=>{
-            console.log("strat data: ",response);
             localStorage.removeItem(`strat_${id}`);
             toast.success(`Updated strategy '${strategyMetrics.description}'`, {
                 position: "bottom-right",
@@ -306,7 +304,6 @@ function Strategy(props){
 
     function deleteStrategy(){
         setDataAvailable(false);
-        console.log("deleting strat");
         const authToken=localStorage.getItem('git');
         axios.delete(config.API_PREFIX+`/strategy?id=${id}&googleid=${profile.id}`,{
             headers:{
@@ -315,7 +312,6 @@ function Strategy(props){
             }
         })
         .then(response=>{
-            console.log("strat data: ",response);
             setDeleteModal(false);
             localStorage.removeItem(`strat_${id}`);
             toast.info(`Deleted strategy '${strategyMetrics.description}'`, {
@@ -329,7 +325,6 @@ function Strategy(props){
             setTimeout(()=>{navigate("/");},2000);
         })
         .catch(err=>{
-            console.log("err: ",err);
             if(err.response && (err.response.status===401 || err.response.status===403) ){
                 toast.error(`Unauthorized, please login again`, {
                     position: "bottom-right",
@@ -360,15 +355,12 @@ function Strategy(props){
         })
         .then(response=>{
             if(response.data.data===undefined){
-                console.log("errorPage")
                 setPageNotFound(true);
                 return;
             }
             setStrategyMetrics(response.data.data);
-            console.log("response: ",response.data.data);
         })
         .catch(err=>{
-            console.log("err: ",err);
             if(err.response && (err.response.status===401 || err.response.status===403) ){
                 toast.error(`Unauthorized, please login again`, {
                     position: "bottom-right",
@@ -393,7 +385,11 @@ function Strategy(props){
         let stratDataStr=localStorage.getItem(`strat_${id}`);
         let stratData=JSON.parse(stratDataStr);
         if(stratData){
-            if(stratData["date"]!==undefined && stratData["date"]===dateToday){
+            let runTime=stratData.time;
+            if(stratData["date"]!==undefined && runTime &&
+                ((stratData["date"]===dateToday && runTime[0]<'16:30') || 
+                ((dateToday.split('-')[0]-stratData["date"].split('-')[0])===1 && runTime[0]>'16:30')
+            )){
                 setDataAvailable(true);
                 setStockData(stratData["data"]);
             }
