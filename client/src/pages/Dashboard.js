@@ -42,6 +42,7 @@ function Dashboard(props){
             title: 'Strategy',
             dataIndex: 'description',
             width:400,
+            key:'strategy',
             render:(_,{description,id})=>(
                 <>
                 <span style={{marginRight:'20px'}}>{description}</span>
@@ -52,6 +53,7 @@ function Dashboard(props){
         {
           title: 'Added on',
           dataIndex: 'date',
+          key:'date',
           defaultSortOrder: 'descend',
           width:screenWidth>=768?400:150,
           sorter: (a, b) => a.id - b.id,
@@ -59,11 +61,9 @@ function Dashboard(props){
       ];
 
     function onStrategyChange(index, data){
-        console.log("changing index ",index);
         let tempStrategyData=strategyData;
         tempStrategyData[index]=data;
         setStrategyData(tempStrategyData);
-        console.log("strat data: ",strategyData);
     }
 
     function onStrategyParameterAdd(){
@@ -77,7 +77,6 @@ function Dashboard(props){
     }
 
      const onFinish = (values) => {
-        console.log('Received values of form:', values);
       };
 
     function compileStrategyData(){
@@ -111,7 +110,6 @@ function Dashboard(props){
         setConfirmLoading(true);
         let paramString=compileStrategyData();
         let dateToday=new Date();
-        console.log("date: ",dateToday);
         let strategy={
             username:profile.given_name,
             description: paramDesc,
@@ -128,7 +126,6 @@ function Dashboard(props){
             }
         })
         .then(response=>{
-            console.log("response: ",response);
             setTimeout(() => {
                 setStrategyModal(false);
                 setConfirmLoading(false);
@@ -143,7 +140,6 @@ function Dashboard(props){
                   });
         })
         .catch(err=>{
-            console.log("err: ",err);
             if(err.response && (err.response.status===401 || err.response.status===403) ){
                 toast.error(`Unauthorized, please login again`, {
                     position: "bottom-right",
@@ -161,7 +157,6 @@ function Dashboard(props){
                 navigate("/maintainence");
             }
         })
-        console.log("strategy: ",strategy);
       };
 
     const getStrategyList=useCallback(()=>{
@@ -173,12 +168,10 @@ function Dashboard(props){
             }
         })
         .then(response=>{
-            console.log("reponse: ",response.data.data);
-            setDashboardData(response.data.data);
+            setDashboardData(response.data.data.map((obj,index)=>({...obj, key:index})));
             setDataAvailable(true);
         })
         .catch(err=>{
-            console.log("err: ",err);
             if(err.response && (err.response.status===401 || err.response.status===403) ){
                 toast.error(`Unauthorized, please login again`, {
                     position: "bottom-right",
@@ -207,7 +200,6 @@ function Dashboard(props){
     }
 
     useEffect(()=>{
-        console.log("calling list");
         getStrategyList();
     },[strategyModal,profile,getStrategyList]);
 

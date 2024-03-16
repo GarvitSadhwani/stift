@@ -28,7 +28,6 @@ function App() {
         setUser(tokens.data);
       })
       .catch((err)=>{
-        console.log("auther: ",err)
         toast.info(`Stift is under maintainence, please try again later`, {
           position: "bottom-right",
           autoClose: 5000,
@@ -54,19 +53,15 @@ function App() {
   });
 
   const reLogin=useCallback(()=>{
-    console.log("called relog")
     if(rt!==''){
-      console.log("trying relog ",rt);
       axios.post(config.API_PREFIX+'/googleauth-refresh', {  
         refreshToken:rt
       }).then((tokens)=>{
         setUser(tokens.data);
         setRt(tokens.data.refresh_token);
         setExpiryTime(tokens.data.expiry_date/1000);
-        console.log("token refreshed, logged again")
       })
       .catch((err)=>{
-        console.log("failed to relogin: ",err)
         logOut();
       });
     }
@@ -78,14 +73,11 @@ function App() {
   useEffect(
       () => {
           const checkTokenExpiry = () => {
-            console.log("exp ",expiryTime)
             if (!localStorage.getItem('gat') || !expiryTime) return;
             const now = new Date().getTime() / 1000;
             if (expiryTime < now) {
-              console.log("relogging");
               reLogin();
             }
-            console.log("login not required");
           };
       
           const tokenExpiryTimer = setInterval(checkTokenExpiry, 60000); 
@@ -94,7 +86,6 @@ function App() {
           if (user || (localStorage.getItem('gat') && localStorage.getItem('git'))) {
             let userAccessToken='';
             let userIdToken='';
-            console.log("user: ",user);
             if(!localStorage.getItem('gat')){ 
               userAccessToken=user.access_token;
               userIdToken=user.id_token;
@@ -113,13 +104,11 @@ function App() {
                   }
               })
               .then((res) => {
-                console.log("google res: ",res);
                 setProfile(res.data);
                 localStorage.setItem("gat",userAccessToken);
                 localStorage.setItem("git",userIdToken);
               })
               .catch((err) => {
-                console.log(err);
                 logOut();
               });
           }

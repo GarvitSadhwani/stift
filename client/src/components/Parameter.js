@@ -91,7 +91,6 @@ export default function Parameter({field, index, onModify, onRemove}){
     }
 
     const onDaysChange=(e)=>{
-        console.log("days: ",e)
         if(!e) return;
         let tempData=paramData;
         tempData["days"]=e;
