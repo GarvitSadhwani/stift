@@ -56,7 +56,7 @@ function Strategy(props){
     const screenWidth = window.innerWidth;
     const id = queryParameters.get("id");
     const date = new Date();
-    const dateToday=''+date.getDate()+'-'+date.getMonth()+'-'+date.getFullYear();
+    const dateToday=''+date.getDate()+'-'+(date.getMonth()+1)+'-'+date.getFullYear();
     const navigate = useNavigate();
     if(isNaN(id)){
         navigate("/page-not-found");

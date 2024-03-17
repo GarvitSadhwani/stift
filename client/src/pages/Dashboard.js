@@ -113,7 +113,7 @@ function Dashboard(props){
         let strategy={
             username:profile.given_name,
             description: paramDesc,
-            date: ''+dateToday.getDate()+'-'+dateToday.getMonth()+'-'+dateToday.getFullYear(),
+            date: ''+dateToday.getDate()+'-'+(dateToday.getMonth()+1)+'-'+dateToday.getFullYear(),
             parameter: paramString,
             googleid:profile.id,
             email:profile.email
