@@ -67,7 +67,12 @@ function Strategy(props){
           title: 'Company',
           dataIndex: 'name',
           width:400,
-          key:'company'
+          key:'company',
+          render:(_,{name,symbol})=>(
+            <>
+            <a href={`https://in.tradingview.com/chart/?symbol=${symbol}`} target="_blank" rel="noreferrer">{name}</a>
+            </>
+          )
         },
         {
             title: 'Symbol',
