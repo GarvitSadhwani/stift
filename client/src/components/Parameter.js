@@ -21,7 +21,7 @@ export default function Parameter({field, index, onModify, onRemove}){
         if(!lengthAttr.includes(e)) onl1Change(null);
         if(!factorAttr.includes(e)) onf1Change(null);
         setParamData(tempData);
-        onModify(index+indexOffset,paramData);
+        onModify(index+indexOffset,tempData);
         setSelectedIndicator(e);
     }
 
@@ -31,7 +31,7 @@ export default function Parameter({field, index, onModify, onRemove}){
         if(!lengthAttr.includes(e)) onl2Change(null);
         if(!factorAttr.includes(e)) onf2Change(null);
         setParamData(tempData);
-        onModify(index+indexOffset,paramData);
+        onModify(index+indexOffset,tempData);
         setSecondIndicator(e);
     }
 
@@ -39,7 +39,7 @@ export default function Parameter({field, index, onModify, onRemove}){
         let tempData=paramData;
         tempData["comp"]=e;
         setParamData(tempData);
-        onModify(index+indexOffset,paramData);
+        onModify(index+indexOffset,tempData);
     }
 
     const onl1Change=(e)=>{
@@ -51,7 +51,7 @@ export default function Parameter({field, index, onModify, onRemove}){
             tempData["l1"]=e;
         } 
         setParamData(tempData);
-        onModify(index+indexOffset,paramData);
+        onModify(index+indexOffset,tempData);
     }
     
     const onf1Change=(e)=>{
@@ -63,7 +63,7 @@ export default function Parameter({field, index, onModify, onRemove}){
             tempData["f1"]=e;
         } 
         setParamData(tempData);
-        onModify(index+indexOffset,paramData);
+        onModify(index+indexOffset,tempData);
     }
 
     const onl2Change=(e)=>{
@@ -75,7 +75,7 @@ export default function Parameter({field, index, onModify, onRemove}){
             tempData["l2"]=e;
         } 
         setParamData(tempData);
-        onModify(index+indexOffset,paramData);
+        onModify(index+indexOffset,tempData);
     }
     
     const onf2Change=(e)=>{
@@ -87,7 +87,7 @@ export default function Parameter({field, index, onModify, onRemove}){
             tempData["f2"]=e;
         } 
         setParamData(tempData);
-        onModify(index+indexOffset,paramData);
+        onModify(index+indexOffset,tempData);
     }
 
     const onDaysChange=(e)=>{
@@ -95,7 +95,7 @@ export default function Parameter({field, index, onModify, onRemove}){
         let tempData=paramData;
         tempData["days"]=e;
         setParamData(tempData);
-        onModify(index+indexOffset,paramData);
+        onModify(index+indexOffset,tempData);
     }
 
     return (
@@ -109,7 +109,7 @@ export default function Parameter({field, index, onModify, onRemove}){
         <Space wrap>
             <Form.Item
                 {...field}
-                validateTrigger={['onIndicatorChange', 'onBlur']}
+                validateTrigger={['onBlur']}
                 rules={[
                     {
                     required: true,

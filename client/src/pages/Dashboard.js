@@ -67,7 +67,7 @@ function Dashboard(props){
     }
 
     function onStrategyParameterAdd(){
-        setStrategyData([...strategyData,null]);
+        setStrategyData([...strategyData,{}]);
     }
 
     function onStrategyParameterRemove(index){
@@ -256,7 +256,7 @@ function Dashboard(props){
                                 required={false}
                                 key={field.key}
                             >
-                                <Parameter field={field} index={index} onModify={onStrategyChange} onRemove={()=>{onStrategyParameterRemove(index);remove(field.name);setAddParam(true);}}/>
+                                <Parameter field={field} index={index} onModify={onStrategyChange} onRemove={()=>{onStrategyParameterRemove(index+1);remove(field.name);setAddParam(true);}}/>
                             </Form.Item>
                             ))}
                             <Form.Item>
