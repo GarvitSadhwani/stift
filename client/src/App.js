@@ -130,7 +130,7 @@ function App() {
         <div className='landing-container'>
           <div className='landing-title'><img src={stift} alt='logo' height={'100px'}/></div>
           <div>
-          <p className='landing-desc'><span style={{fontSize:'20px'}}>Welcome!</span><br/><br/>Stift offers customizable stock screening for the NSE, providing tailored results promptly. With advanced encryption, stringent security measures, and an intuitive interface, it ensures data protection while simplifying stock selection for both seasoned investors and newcomers. Ready to explore more?</p>
+          <p className='landing-desc'><span style={{fontSize:'20px'}}>Welcome!</span><br/><br/>Stift offers customizable stock screening for the BSE, providing tailored results promptly. With advanced encryption, stringent security measures, and an intuitive interface, it ensures data protection while simplifying stock selection for both seasoned investors and newcomers. Ready to explore more?</p>
           <button className="gsi-material-button" onClick={login}>
             <div className="gsi-material-button-state"></div>
             <div className="gsi-material-button-content-wrapper">
