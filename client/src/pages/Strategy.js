@@ -217,8 +217,9 @@ function Strategy(props){
             let recievedStockData={"data":response.data.data.filter(obj=>obj.perChange!==null && obj.perChange!==undefined).map((obj, index) => ({ ...obj, key: index }))};
             let runTime=new Date();
             recievedStockData["date"]=dateToday;
-            recievedStockData["time"]=runTime.getHours()+":"+runTime.getMinutes();
-            if(recievedStockData["time"].length<5) recievedStockData["time"]='0'+recievedStockData["time"]; 
+            let runTimeHours=runTime.getHours().length===1?'0'+runTime.getHours():runTime.getHours();
+            let runTimeMinutes=runTime.getMinutes().length===1?'0'+runTime.getMinutes():runTime.getMinutes();
+            recievedStockData["time"]=runTimeHours+":"+runTimeMinutes;
             setStockData(recievedStockData["data"]);
             let industries=response.data.data.map(obj=>{
                 if(obj.industry===' ')return 'Mutual Funds';
@@ -389,11 +390,13 @@ function Strategy(props){
         getStrategyData();
         let stratDataStr=localStorage.getItem(`strat_${id}`);
         let stratData=JSON.parse(stratDataStr);
+        let curTimestamp=new Date();
+        let curTime=curTimestamp.getHours()+":"+curTimestamp.getMinutes();
         if(stratData){
             let runTime=stratData.time;
             if(stratData["date"]!==undefined && runTime &&
-                ((stratData["date"]===dateToday && runTime[0]<'16:30') || 
-                ((dateToday.split('-')[0]-stratData["date"].split('-')[0])===1 && runTime[0]>'16:30')
+                ((stratData["date"]===dateToday && runTime[0]>'16:30') || 
+                ((dateToday.split('-')[0]-stratData["date"].split('-')[0])===1 && curTime<'16:30' && runTime[0]>'16:30')
             )){
                 setDataAvailable(true);
                 setStockData(stratData["data"]);
