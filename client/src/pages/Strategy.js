@@ -70,7 +70,7 @@ function Strategy(props){
           key:'company',
           render:(_,{name,symbol})=>(
             <>
-            <a href={`https://in.tradingview.com/chart/?symbol=${symbol}`} target="_blank" rel="noreferrer">{name}</a>
+            <a href={`https://in.tradingview.com/chart/?symbol=BSE%3A${symbol}`} target="_blank" rel="noreferrer">{name}</a>
             </>
           )
         },
