@@ -391,11 +391,13 @@ function Strategy(props){
         let stratDataStr=localStorage.getItem(`strat_${id}`);
         let stratData=JSON.parse(stratDataStr);
         let curTimestamp=new Date();
-        let curTime=curTimestamp.getHours()+":"+curTimestamp.getMinutes();
+        let curTimeHours=curTimestamp.getHours().length===1?'0'+curTimestamp.getHours():curTimestamp.getHours();
+        let curTimeMinutes=curTimestamp.getMinutes().length===1?'0'+curTimestamp.getMinutes():curTimestamp.getMinutes();
+        let curTime = curTimeHours+":"+curTimeMinutes;
         if(stratData){
             let runTime=stratData.time;
             if(stratData["date"]!==undefined && runTime &&
-                ((stratData["date"]===dateToday && runTime[0]>'16:30') || 
+                ((stratData["date"]===dateToday && (runTime[0]>'16:30' || (runTime[0]<'16:30' && curTime<'16:30'))) || 
                 ((dateToday.split('-')[0]-stratData["date"].split('-')[0])===1 && curTime<'16:30' && runTime[0]>'16:30')
             )){
                 setDataAvailable(true);
